@@ -1,4 +1,7 @@
 
+using CinemaInfrastructure.Data;
+using Microsoft.EntityFrameworkCore;
+
 namespace Cinema.Web
 {
     public class Program
@@ -13,6 +16,13 @@ namespace Cinema.Web
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
+            //My services, context and repositories, unit of work
+            builder.Services.AddDbContext<CinemaDbContext>(options =>
+            {
+                options.UseSqlServer(builder.Configuration
+                    .GetConnectionString("DefaultConnection"));
+            });
 
             var app = builder.Build();
 

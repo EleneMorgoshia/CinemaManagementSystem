@@ -30,25 +30,25 @@ namespace CinemaDomain.Models.Entities
 }
 
 
-//booking vs User
+//booking vs User +
 //1 User - Many booking
 //1 booking - 1user
 //1 to many
 
 
-//booking vs session
+//booking vs session +
 //1 seesion - Many booking
 //1 booking - one session - თითოეული ჯავშანი კონკრეტულ სეანსს უკავშირდება
 //ანუ ახალი ჯავშანი მინდა თუ ახალ სეანსზე მივდივარ
 //1 To Many
 
 
-//booking vs seat
+//booking vs seat +
 //1 booking - 1 seat
 //1 seat - Many booking
 //Many TO many
 
-//booking vs tickets
+//booking vs ticket+
 //1 booking - 1 ticket
 //1 ticket - 1 booking
 //1 to one

@@ -44,16 +44,21 @@ namespace CinemaDomain.Models.Entities
 
         public Movie Movie { get; set; }
         public Hall Hall { get; set; }
+
+        //Session vs Movies
+        public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
     }
 }
 
-//Session vs Movie
+//Session vs Movie +
 //1 session - 1 MOVIE
 //1MOVIE - MANY SESSION
 //1 TO MANY
 
 
-//session vs hall
+//session vs hall +
 //1 SESSION - 1 HALL
 //1HALL - Many SESSION
 //1 TO MANY
+
+//Session vs booking+

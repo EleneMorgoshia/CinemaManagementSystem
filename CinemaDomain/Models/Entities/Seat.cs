@@ -47,3 +47,5 @@ namespace CinemaDomain.Models.Entities
         
     }
 }
+
+

@@ -16,3 +16,5 @@ namespace CinemaDomain.Models.Entities
         public ICollection<MovieGenre> MovieGenreRecords { get; set; } = new List<MovieGenre>();
     }
 }
+
+//Genre vs MovieGenreRecords+

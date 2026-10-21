@@ -74,5 +74,8 @@ namespace CinemaDomain.Models.Entities
                 _role = value;
             }
         }
+
+        //User vs Booking
+        public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
     }
 }

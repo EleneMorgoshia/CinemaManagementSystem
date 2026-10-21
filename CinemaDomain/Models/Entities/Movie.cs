@@ -63,17 +63,13 @@ namespace CinemaDomain.Models.Entities
         //1 particular movie and all the records connected to it.
         public ICollection<MovieGenre> MovieGenreRecords { get; set; } = new List<MovieGenre>();
 
-        //Session that can have 1 particualr movie
-        public ICollection<Session> MovieSession { get; set; } = new List<Session>();
+        //Sessions that can have 1 particualr movie
+        public ICollection<Session> MovieSessions { get; set; } = new List<Session>();
     }
 }
 
-//Movie and Genre
-//1 movie - Many genres
-//1genre - Many movie
-//Many to many relation
-
-
-//movie and movieGnere relations
+//Movie and MovieGnere +
 // 1 movie - Many Genre records
-//  1genre recode - 1 movie
+// 1genre recode - 1 movie
+
+//Movie and Session +

@@ -33,6 +33,7 @@ namespace CinemaDomain.Models.Entities
 }
 
 
-//1 hall - Many seats
+//Hall vs Seats+
+//1 hall - Many seats 
 //1 seat - 1 hall
 //1 to many 

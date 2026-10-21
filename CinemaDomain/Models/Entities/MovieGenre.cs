@@ -15,3 +15,6 @@ namespace CinemaDomain.Models.Entities
         public Genre Genre { get; set; } // genre navigation property 
     }
 }
+
+//MovieGenre vs Movie
+//MovieGenre vs Genre
