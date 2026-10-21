@@ -1,5 +1,8 @@
 
+using CinemaDomain.Interfaces;
+using CinemaInfrastructure;
 using CinemaInfrastructure.Data;
+using CinemaInfrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace Cinema.Web
@@ -23,7 +26,16 @@ namespace Cinema.Web
                 options.UseSqlServer(builder.Configuration
                     .GetConnectionString("DefaultConnection"));
             });
-
+            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+            builder.Services.AddScoped<IMovieRepository, MovieRepository>();
+            builder.Services.AddScoped<ISessionRepository, SessionRepository>();
+            builder.Services.AddScoped<IUserRepository, UserRepository>();
+            builder.Services.AddScoped<IBookingRepository, BookingRepository>();
+            builder.Services.AddScoped<IHallRepository, HallRepository>();
+            builder.Services.AddScoped<ITicketRepository, TicketRepository>();
+            builder.Services.AddScoped<ISeatRepository,  SeatRepository>();
+            builder.Services.AddScoped<IGenreRepository, GenreRepository>();
+            
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
