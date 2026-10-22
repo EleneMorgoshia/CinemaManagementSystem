@@ -8,8 +8,8 @@ namespace CinemaDomain.Models.Entities
 {
     public class Seat
     {
-        public int _rowNumber;
-        public int _seatNumber;
+        private int _rowNumber;
+        private int _seatNumber;
         public int Id { get; set; }
         public int RowNumber
         {

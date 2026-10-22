@@ -41,7 +41,6 @@ namespace CinemaDomain.Models.Entities
             }
         }
         public bool Status { get; set; }
-
         public Movie Movie { get; set; }
         public Hall Hall { get; set; }
 
