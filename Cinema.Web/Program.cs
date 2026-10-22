@@ -1,4 +1,6 @@
 
+using CinemaApplication.Services.Implementations;
+using CinemaApplication.Services.Interfaces;
 using CinemaDomain.Interfaces;
 using CinemaInfrastructure;
 using CinemaInfrastructure.Data;
@@ -35,7 +37,7 @@ namespace Cinema.Web
             builder.Services.AddScoped<ITicketRepository, TicketRepository>();
             builder.Services.AddScoped<ISeatRepository,  SeatRepository>();
             builder.Services.AddScoped<IGenreRepository, GenreRepository>();
-            
+            builder.Services.AddScoped<IUserService, UserService>();
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
