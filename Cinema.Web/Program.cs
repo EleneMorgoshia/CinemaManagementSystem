@@ -1,9 +1,11 @@
 
+using CinemaApplication.Profiles;
 using CinemaApplication.Services.Implementations;
 using CinemaApplication.Services.Interfaces;
 using CinemaDomain.Interfaces;
 using CinemaInfrastructure;
 using CinemaInfrastructure.Data;
+using CinemaInfrastructure.Identity;
 using CinemaInfrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 
@@ -38,6 +40,14 @@ namespace Cinema.Web
             builder.Services.AddScoped<ISeatRepository,  SeatRepository>();
             builder.Services.AddScoped<IGenreRepository, GenreRepository>();
             builder.Services.AddScoped<IUserService, UserService>();
+            
+            //AUTO MAPPER ADD
+            builder.Services.AddAutoMapper(cfg => { }, typeof(UserProfile).Assembly);
+
+            //add identity+
+            builder.Services.AddIdentityCore<ApplicationUser>()
+                .AddEntityFrameworkStores<CinemaDbContext>();
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -58,3 +68,4 @@ namespace Cinema.Web
         }
     }
 }
+

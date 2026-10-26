@@ -1,4 +1,6 @@
 ﻿using CinemaDomain.Models.Entities;
+using CinemaInfrastructure.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -8,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace CinemaInfrastructure.Data
 {
-    public class CinemaDbContext : DbContext
+    public class CinemaDbContext : IdentityDbContext<ApplicationUser>
     {
         public CinemaDbContext(DbContextOptions<CinemaDbContext> options) : base(options) 
         { 

@@ -6,7 +6,7 @@ namespace Cinema.Web.Controllers
 {
     [ApiController]
     [Route("api/[Controller]")]
-    public class UserController : ControllerBase
+    public class UserController : ControllerBase //ამით ვეუბნები რომ დამიბრუნოს მარტო  HTTP სტატუსები
     {
         private readonly IUserService _userService;
         public UserController(IUserService userService)
@@ -31,6 +31,8 @@ namespace Cinema.Web.Controllers
         [HttpPost] //create
         public async Task<ActionResult<UserDTO>> AddUser(CreateUserDTO userDTO, CancellationToken cancellationToken)
         {
+            if(userDTO == null) 
+                return BadRequest("Invalid data");
             var user = await _userService.AddUserAsync(userDTO, cancellationToken);
             return CreatedAtAction(
                 nameof(GetUser),

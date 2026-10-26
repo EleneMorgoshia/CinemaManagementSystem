@@ -1,4 +1,5 @@
-﻿using CinemaApplication.Services.Interfaces;
+﻿using AutoMapper;
+using CinemaApplication.Services.Interfaces;
 using CinemaDomain.Enums;
 using CinemaDomain.Interfaces;
 using CinemaDomain.Models.DTOs;
@@ -16,16 +17,18 @@ namespace CinemaApplication.Services.Implementations
     {
         private readonly IUserRepository _userRepository;
         private readonly IUnitOfWork _unitOfWork;
-        public UserService(IUserRepository userRepository, IUnitOfWork unirOfWork)
+        private readonly IMapper _mapper;
+        public UserService(IUserRepository userRepository, IUnitOfWork unirOfWork, IMapper mapper)
         {
             _userRepository = userRepository;
             _unitOfWork = unirOfWork;
+            _mapper = mapper;
         }
 
         public async Task<ICollection<UserDTO>> GetAllUsersAsync(CancellationToken cancellationToken)
         {
             var users = await _userRepository.GetUsers(cancellationToken);
-            return users.Select(u => EntityToDto(u)).ToList();
+            return users.Select(_mapper.Map<User, UserDTO>).ToList();
         }
 
         public async Task<UserDTO> GetUserByIdAsync(int id, CancellationToken cancellationToken)
@@ -35,7 +38,8 @@ namespace CinemaApplication.Services.Implementations
             var user = await _userRepository.GetUserById(id, cancellationToken);
             if (user == null)
                 throw new ArgumentException($"There is no user with this id - {id}");
-            return EntityToDto(user);
+            //return EntityToDto(user);
+            return _mapper.Map<User, UserDTO>(user);
         }
 
         public async Task<UserDTO> GetUserByEmailAsync(string email, CancellationToken cancellationToken)
@@ -45,7 +49,8 @@ namespace CinemaApplication.Services.Implementations
             var user = await _userRepository.GetUserByEmail(email, cancellationToken);
             if(user == null)
                 throw new ArgumentException($"There is no user with this Email - {email}");
-            return EntityToDto(user);
+            //return EntityToDto(user);
+            return _mapper.Map<User, UserDTO>(user);
         }
         public async Task<Role?> GetUserRoleByIdAsync(int id, CancellationToken cancellationToken)
         {
@@ -71,6 +76,11 @@ namespace CinemaApplication.Services.Implementations
         {
             if(user == null)
                 throw new ArgumentNullException(nameof(user));
+
+            var existingUser = await _userRepository.GetUserByEmail(user.Email, cancellationToken);
+            if (existingUser == null)
+                throw new ArgumentException("This email is already registered");
+
             var userEntity = new User 
             { 
                 UserName = user.UserName,
@@ -81,7 +91,8 @@ namespace CinemaApplication.Services.Implementations
 
             await _userRepository.AddUser(userEntity, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
-            return EntityToDto(userEntity);
+            //return EntityToDto(userEntity);
+            return _mapper.Map<User, UserDTO>(userEntity);
         }
 
         public async Task<UserDTO> UpdateUser(int id, UpdateUserDTO user, CancellationToken cancellationToken)
@@ -103,7 +114,8 @@ namespace CinemaApplication.Services.Implementations
 
             _userRepository.UpdateUser(userById);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
-            return EntityToDto(userById);
+            //return EntityToDto(userById);
+            return _mapper.Map<User, UserDTO>(userById);
         }
 
         public async Task DeleteUser(int id, CancellationToken cancellationToken)
@@ -118,18 +130,18 @@ namespace CinemaApplication.Services.Implementations
             await _unitOfWork.SaveChangesAsync(cancellationToken);
         }
 
-        private UserDTO EntityToDto(User user)
-        {
-            if (user == null)
-                throw new ArgumentNullException(nameof(user));
-            return new UserDTO
-            {
-                Id = user.Id,
-                UserName = user.UserName,
-                Email = user.Email,
-                Role = user.Role,
-            };
+        //private UserDTO EntityToDto(User user)
+        //{
+        //    if (user == null)
+        //        throw new ArgumentNullException(nameof(user));
+        //    return new UserDTO
+        //    {
+        //        Id = user.Id,
+        //        UserName = user.UserName,
+        //        Email = user.Email,
+        //        Role = user.Role,
+        //    };
 
-        }
+        //}
     }
 }
