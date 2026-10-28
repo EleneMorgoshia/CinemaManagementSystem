@@ -11,10 +11,10 @@ using System.Threading.Tasks;
 
 namespace CinemaInfrastructure.Repositories
 {
-    public class UserRepository : IUserRepository
+    public class UserManagerRepository : IUserRepository
     {
         private readonly CinemaDbContext _context;
-        public UserRepository(CinemaDbContext context)
+        public UserManagerRepository(CinemaDbContext context)
         {
             _context = context;
         }

@@ -5,11 +5,11 @@ using Microsoft.AspNetCore.Mvc;
 namespace Cinema.Web.Controllers
 {
     [ApiController]
-    [Route("api/[Controller]")]
+    [Route("api/[Controller]/[action]")]
     public class UserController : ControllerBase //ამით ვეუბნები რომ დამიბრუნოს მარტო  HTTP სტატუსები
     {
-        private readonly IUserService _userService;
-        public UserController(IUserService userService)
+        private readonly IUsermManagerService _userService;
+        public UserController(IUsermManagerService userService)
         {
             _userService = userService;
         }

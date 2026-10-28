@@ -33,18 +33,19 @@ namespace Cinema.Web
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
             builder.Services.AddScoped<IMovieRepository, MovieRepository>();
             builder.Services.AddScoped<ISessionRepository, SessionRepository>();
-            builder.Services.AddScoped<IUserRepository, UserRepository>();
+            builder.Services.AddScoped<IUserRepository, UserManagerRepository>();
             builder.Services.AddScoped<IBookingRepository, BookingRepository>();
             builder.Services.AddScoped<IHallRepository, HallRepository>();
             builder.Services.AddScoped<ITicketRepository, TicketRepository>();
             builder.Services.AddScoped<ISeatRepository,  SeatRepository>();
             builder.Services.AddScoped<IGenreRepository, GenreRepository>();
+            builder.Services.AddScoped<IUsermManagerService, UserManagerService>();
             builder.Services.AddScoped<IUserService, UserService>();
-            
+
             //AUTO MAPPER ADD
             builder.Services.AddAutoMapper(cfg => { }, typeof(UserProfile).Assembly);
 
-            //add identity+
+            //add identity+(migration (update database) )
             builder.Services.AddIdentityCore<ApplicationUser>()
                 .AddEntityFrameworkStores<CinemaDbContext>();
 
@@ -54,7 +55,11 @@ namespace Cinema.Web
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
-                app.UseSwaggerUI();
+                //app.UseSwaggerUI();
+                app.UseSwaggerUI(options =>
+                {
+                    options.SwaggerEndpoint("/swagger/v1/swagger.json", "CinemaGo API v1");
+                });
             }
 
             app.UseHttpsRedirection();
