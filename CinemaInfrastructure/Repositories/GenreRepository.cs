@@ -27,12 +27,6 @@ namespace CinemaInfrastructure.Repositories
         {
             return await _context.Genres.FirstOrDefaultAsync(g => g.Id == id, cancellationToken);
         }
-
-        public async Task<Genre?> GetGenreByName(string genreName, CancellationToken cancellationToken)
-        {
-            return await _context.Genres.FirstOrDefaultAsync( g => g.GenreName == genreName, cancellationToken);
-        }
-
         public async Task AddGenre(Genre genre, CancellationToken cancellationToken)
         {
             await _context.Genres.AddAsync(genre, cancellationToken);
@@ -46,6 +40,21 @@ namespace CinemaInfrastructure.Repositories
         public void Delete(Genre genre)
         {
             _context.Genres.Remove(genre);
+        }
+
+        //public async Task<Genre?> GetGenreByName(string genreName, CancellationToken cancellationToken)
+        //{
+        //    return await _context.Genres.FirstOrDefaultAsync( g => g.GenreName == genreName, cancellationToken);
+        //}
+
+        public async Task<ICollection<Genre>> GetGenresByMovieName(string movieName, CancellationToken cancellationToken)
+        {
+            var genres = await _context.Movies
+                .Where(m => m.Title == movieName)
+                .SelectMany(m => m.MovieGenreRecords) //combines multiple collections into one flat collection.
+                .Select(mg => mg.Genre)
+                .ToListAsync(cancellationToken);
+            return genres;
         }
     }
 }

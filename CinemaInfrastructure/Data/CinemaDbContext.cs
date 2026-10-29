@@ -103,6 +103,7 @@ namespace CinemaInfrastructure.Data
             modelBuilder.Entity<Genre>(entity =>
             {
                 entity.Property(e => e.GenreName).IsRequired().HasMaxLength(100);
+                entity.HasIndex(e => e.GenreName).IsUnique();
             });
 
             modelBuilder.Entity<Hall>(entity =>

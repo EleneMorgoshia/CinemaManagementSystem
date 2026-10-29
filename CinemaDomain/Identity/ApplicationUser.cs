@@ -9,5 +9,6 @@ namespace CinemaInfrastructure.Identity
 {
     public class ApplicationUser : IdentityUser
     {
+
     }
 }

@@ -71,6 +71,9 @@ namespace CinemaInfrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("GenreName")
+                        .IsUnique();
+
                     b.ToTable("Genres");
                 });
 
