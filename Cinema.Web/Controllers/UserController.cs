@@ -1,9 +1,11 @@
 ﻿using CinemaApplication.Services.Interfaces;
 using CinemaDomain.Models.DTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Cinema.Web.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[Controller]/[action]")]
     public class UserController : ControllerBase //ამით ვეუბნები რომ დამიბრუნოს მარტო  HTTP სტატუსები
@@ -14,6 +16,7 @@ namespace Cinema.Web.Controllers
             _userService = userService;
         }
 
+        [AllowAnonymous]
         [HttpGet] //read
         public async Task<IActionResult> GetAllUsers(CancellationToken cancellationToken)
         {
@@ -54,9 +57,5 @@ namespace Cinema.Web.Controllers
             await _userService.DeleteUser(id, cancellationToken);
             return NoContent(); //204
         }
-        //public IActionResult Index()
-        //{
-            
-        //}
     }
 }

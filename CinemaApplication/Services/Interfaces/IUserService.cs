@@ -10,6 +10,5 @@ namespace CinemaApplication.Services.Interfaces
     public interface IUserService
     {
         Task RegistrUserAsync(RegisterDTO userDTO, CancellationToken cancellationToken = default);
-        Task<bool> LogInUserAsync(LoginDTO userDTO, CancellationToken cancellationToken = default);
     }
 }

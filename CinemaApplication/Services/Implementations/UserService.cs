@@ -30,15 +30,5 @@ namespace CinemaApplication.Services.Implementations
             if (!result.Succeeded)
                 throw new Exception(string.Join(", ", result.Errors.Select(e => e.Description)));
         }
-
-        public async Task<bool> LogInUserAsync(LoginDTO userDTO, CancellationToken cancellationToken = default)
-        {
-            var user = await _userManager.FindByEmailAsync(userDTO.Email);//ჩაშენებული აქვს ესესც მენეჯერს
-            if (user == null)
-                return false;
-            var result = await _userManager.CheckPasswordAsync(user, userDTO.Password);
-            return result;
-
-        }
     }
 }

@@ -10,9 +10,11 @@ namespace Cinema.Web.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IUserService _userService;
-        public AuthController(IUserService userService)
+        private readonly IAuthService _authService;
+        public AuthController(IUserService userService, IAuthService authService)
         {
             _userService = userService;
+            _authService = authService;
         }
 
         [HttpPost]
@@ -23,12 +25,12 @@ namespace Cinema.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Login([FromBody]LoginDTO loginDTO, CancellationToken cancellationToken)
+        public async Task<IActionResult> Login([FromBody] LoginDTO loginDTO, CancellationToken cancellationToken)
         {
-            var isAuthenticated = await _userService.LogInUserAsync(loginDTO,  cancellationToken);
-            if (!isAuthenticated)
+            var result = await _authService.LoginUserAsync(loginDTO, cancellationToken);
+            if (result == null)
                 return Unauthorized("Invalid email or password");
-            return Ok("User logged in successfully");
+            return Ok(result);
         }
     }
 }
