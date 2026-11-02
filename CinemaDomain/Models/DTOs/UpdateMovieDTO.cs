@@ -23,5 +23,8 @@ namespace CinemaDomain.Models.DTOs
 
         [MaxLength(2000)]
         public string? Description{get; set; }
+
+        [MinLength(1)]
+        public List<int> GenreIds { get; set; } = new();
     }
 }

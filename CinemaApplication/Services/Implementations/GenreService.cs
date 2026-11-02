@@ -16,11 +16,13 @@ namespace CinemaApplication.Services.Implementations
         private readonly IGenreRepository _genreRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        public GenreService(IGenreRepository genreRepository, IUnitOfWork unitOfWork, IMapper mapper)
+        private readonly IMovieGenreRepository _movieGenreRepository;
+        public GenreService(IGenreRepository genreRepository, IUnitOfWork unitOfWork, IMapper mapper, IMovieGenreRepository movieGenreRespository)
         {
             _genreRepository = genreRepository;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _movieGenreRepository = movieGenreRespository;
         }
 
         public async Task<ICollection<GenreDTO>> GetAllGenresAsync(CancellationToken cancellationToken)
@@ -72,9 +74,14 @@ namespace CinemaApplication.Services.Implementations
             var genre = await _genreRepository.GetGenreById(id, cancellationToken);
             if(genre == null)
                 throw new ArgumentException($"There is no genre with {id} id");
+
+            var relatedMovies = await _movieGenreRepository.GetMoviesByGenreIdAsync(id, cancellationToken);
+            if (relatedMovies.Any())
+                throw new InvalidOperationException("Cannot delete a genre that is assigned to movies. Remove its associations first."); 
+            
             _genreRepository.Delete(genre);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
-        }
+        } 
 
         public async Task<ICollection<GenreDTO>> GetGenresByMovieNameAsync(string movieName, CancellationToken cancellationToken)
         {

@@ -89,7 +89,8 @@ namespace Cinema.Web
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IMovieService, MovieService>();
             builder.Services.AddScoped<IGenreService, GenreService>();
-
+            builder.Services.AddScoped<IMovieGenreRepository, MovieGenreRepository>();
+            builder.Services.AddScoped<IMovieGenreService, MovieGenreService>();
             //AUTO MAPPER ADD
             builder.Services.AddAutoMapper(cfg => { }, typeof(UserProfile).Assembly);
 

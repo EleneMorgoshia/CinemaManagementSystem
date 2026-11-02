@@ -10,9 +10,12 @@ namespace CinemaDomain.Interfaces
 {
     public interface IMovieGenreRepository
     {
+        Task<ICollection<MovieGenre>> GetAllMovieGenresAsync(CancellationToken cancellationToken);
         Task<MovieGenre?> GetMovieGenre(int movieId, int genreId, CancellationToken cancellationToken);
         Task AddMovieGenreAsync(MovieGenre movieGenre, CancellationToken cancellationToken);
-        public void DeleteMovieGenre(MovieGenre movieGenre);
+        Task<ICollection<MovieGenre>> GetGenresByMovieIdAsync(int movieId, CancellationToken cancellationToken);
+        Task<ICollection<MovieGenre>> GetMoviesByGenreIdAsync(int genreId, CancellationToken cancellationToken);
+        void DeleteMovieGenre(MovieGenre movieGenre);
 
     }
 }

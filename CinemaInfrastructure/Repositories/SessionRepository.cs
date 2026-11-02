@@ -20,26 +20,34 @@ namespace CinemaInfrastructure.Repositories
 
         public async Task<ICollection<Session>> GetSessions(CancellationToken cancellationToken)
         {
-            return await _context.Sessions.ToListAsync(cancellationToken);
+            return await _context.Sessions.Include(s => s.Movie).Include(s => s.Hall).ToListAsync(cancellationToken);
         }
 
         public async Task<Session?> GetSessionById(int id, CancellationToken cancellationToken)
         {
-            return await _context.Sessions.FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
+            return await _context.Sessions.Include(s => s.Movie).Include(s => s.Hall).FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
         }
 
         //get sessions by movie id 
         //1 movie can have several sessions
         public async Task<ICollection<Session>> GetSessionsByMovieId(int movieId, CancellationToken cancellationToken)
         {
-           return await _context.Sessions.Where(s => s.MovieId == movieId).ToListAsync(cancellationToken);
+            return await _context.Sessions
+                .Include(s => s.Movie)
+                .Include(s => s.Hall)
+                .Where(s => s.MovieId == movieId)
+                .ToListAsync(cancellationToken);
         }
 
         //get sessions by hallid
         //1 hall can have several sessions
         public async Task<ICollection<Session>> GetSessionsByHallId(int  hallId, CancellationToken cancellationToken)
         {
-            return await _context.Sessions.Where(s => s.HallId == hallId).ToListAsync(cancellationToken);
+            return await _context.Sessions
+                .Include(s => s.Movie)
+                .Include(s => s.Hall)
+                .Where(s => s.HallId == hallId)
+                .ToListAsync(cancellationToken); 
         }
 
         public async Task AddSession(Session session, CancellationToken cancellationToken)

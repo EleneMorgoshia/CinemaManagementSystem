@@ -20,12 +20,13 @@ namespace CinemaInfrastructure.Repositories
 
         public async Task<ICollection<Movie>> GetMovies(CancellationToken cancelationToken)
         {
-            return await _context.Movies.ToListAsync(cancelationToken);
+            return await _context.Movies.Include(m => m.MovieGenreRecords).ToListAsync(cancelationToken);
         }
 
         public async Task<Movie?> GetMovieById(int id, CancellationToken cancelationToken)
         {
-            return await _context.Movies.FirstOrDefaultAsync(m => m.Id == id, cancelationToken);
+            //return await _context.Movies.FirstOrDefaultAsync(m => m.Id == id, cancelationToken);
+            return await _context.Movies.Include(m => m.MovieGenreRecords).FirstOrDefaultAsync(m => m.Id == id, cancelationToken);
         }
 
         public async Task AddMovie(Movie movie, CancellationToken cancelationToken)

@@ -13,12 +13,18 @@ namespace CinemaApplication.Profiles
     {
         public MovieProfile()
         {
-            CreateMap<Movie, MovieDTO>();
+            //CreateMap<Movie, MovieDTO>();
+            CreateMap<Movie, MovieDTO>()
+            .ForMember(dest => dest.GenreIds,opt => opt.MapFrom(src =>
+                src.MovieGenreRecords.Select(mg => mg.GenreId)));
             CreateMap<MovieDTO, Movie>();
-            CreateMap<CreateMovieDTO, Movie>();
+            CreateMap<CreateMovieDTO, Movie>()
+                .ForMember(dest => dest.MovieGenreRecords, opt => opt.Ignore());
             CreateMap<Movie, CreateMovieDTO>();
             CreateMap<Movie, UpdateMovieDTO>();
-            CreateMap<UpdateMovieDTO, Movie>();
+            CreateMap<UpdateMovieDTO, Movie>()
+            .ForMember(dest => dest.MovieGenreRecords,
+                opt => opt.Ignore());
             CreateMap<CreateMovieDTO, MovieDTO>();
         }
     }

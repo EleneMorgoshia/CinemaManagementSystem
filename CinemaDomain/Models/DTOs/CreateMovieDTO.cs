@@ -25,5 +25,11 @@ namespace CinemaDomain.Models.DTOs
         [Required]
         [MaxLength(2000)]
         public string? Description { get; set; }
+
+
+        //ჟანრის აიდები გავატანოთ ნებისმიერ ფილმს დამატების დროს
+        [Required]
+        [MinLength(1, ErrorMessage = "Movie must have at least one genre.")]
+        public List<int> GenreIds { get; set; } = new();
     }
 }

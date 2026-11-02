@@ -12,6 +12,7 @@ namespace CinemaApplication.Services.Interfaces
 {
     public interface IMovieService
     {
+
         Task<ICollection<MovieDTO>> GetAllMoviesAsync(CancellationToken cancellationToken);
         Task<MovieDTO> GetMovieByIdAsync(int id, CancellationToken cancellationToken);
         Task<MovieDTO> AddMovieAsync(CreateMovieDTO movieDto, CancellationToken cancellationToken);

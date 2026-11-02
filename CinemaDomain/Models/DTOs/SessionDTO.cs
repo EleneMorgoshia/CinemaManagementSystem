@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CinemaDomain.Enums;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -25,7 +26,8 @@ namespace CinemaDomain.Models.DTOs
         [Required]
         public int DurationMinutes { get; set; }
         [Required]
-        public string AgeRating { get; set; }
+        [EnumDataType(typeof(AgeRating))]
+        public AgeRating AgeRating { get; set; }
 
         //Hall Info
         public int HallId { get; set; }
