@@ -10,12 +10,12 @@ namespace CinemaDomain.Models.DTOs
 {
     public class UserDTO
     {
-        public int Id { get; set; }
+        public string Id { get; set; }
         [Required]
         public string UserName { get;set;  }
         [Required]
         public string Email {  get; set; }
-        [Required]
-        public Role Role {  get; set; }
+        //[Required]
+        //public Role Role {  get; set; }
     }
 }

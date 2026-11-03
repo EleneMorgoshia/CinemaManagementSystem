@@ -2,6 +2,7 @@
 using CinemaDomain.Models.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Cinema.Web.Controllers
 {
@@ -16,7 +17,6 @@ namespace Cinema.Web.Controllers
             _userService = userService;
         }
 
-        [AllowAnonymous]
         [HttpGet] //read
         public async Task<IActionResult> GetAllUsers(CancellationToken cancellationToken)
         {
@@ -24,38 +24,40 @@ namespace Cinema.Web.Controllers
             return Ok(users);
         }
 
-        [HttpGet("{id:int}")] //read
-        public async Task<IActionResult> GetUser(int id, CancellationToken cancellationToken)
+        [HttpGet("{id}")] //read
+        public async Task<IActionResult> GetUser(string id)
         {
-            var user = await _userService.GetUserByIdAsync(id, cancellationToken);
+            var user = await _userService.GetUserByIdAsync(id);
             return Ok(user);
         }
 
-        [HttpPost] //create
-        public async Task<ActionResult<UserDTO>> AddUser(CreateUserDTO userDTO, CancellationToken cancellationToken)
+     
+
+        [HttpPut("{id}")] //update
+        public async Task<IActionResult> UpdateUser(string id, [FromBody] UpdateUserDTO updateUserDto)
         {
-            if(userDTO == null) 
-                return BadRequest("Invalid data");
-            var user = await _userService.AddUserAsync(userDTO, cancellationToken);
-            return CreatedAtAction(
-                nameof(GetUser),
-                new { id = user.Id },
-                user
-            );
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var isAdmin = User.IsInRole("Admin");
+
+            if (!isAdmin && currentUserId != id)
+                return Forbid();
+
+            var updatedUser = await _userService.UpdateUserAsync(id, updateUserDto);
+            return Ok(updatedUser);
         }
 
-        [HttpPut("{id:int}")] //update
-        public async Task<IActionResult> UpdateUser(int id, UpdateUserDTO updateUserDto, CancellationToken cancellationToken)
-        {
-            await _userService.UpdateUser(id, updateUserDto, cancellationToken);
-            return NoContent(); //204
-        }
 
-        [HttpDelete("{id:int}")] //delete
-        public async Task<IActionResult> DeleteUser(int id, CancellationToken cancellationToken)
+        [HttpDelete("{id}")] //delete
+        public async Task<IActionResult> DeleteUser(string id)
         {
-            await _userService.DeleteUser(id, cancellationToken);
-            return NoContent(); //204
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var isAdmin = User.IsInRole("Admin");
+
+            if (!isAdmin && currentUserId != id)
+                return Forbid();
+
+            await _userService.DeleteUserAsync(id);
+            return NoContent();
         }
     }
 }

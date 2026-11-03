@@ -16,7 +16,7 @@ namespace CinemaDomain.Models.DTOs
         [Required]
         public DateTime CreatedAt { get; set; }
         [Required]
-        public int UserId { get; set; }
+        public string UserId { get; set; }
         [Required]
         public int SessionId { get; set; }
         [Required]

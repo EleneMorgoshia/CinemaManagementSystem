@@ -12,8 +12,8 @@ namespace CinemaDomain.Models.Entities
         public bool Status { get; set; }
         public DateTime CreatedAt { get; set; }
         //booking vs user relation
-        public int UserId { get; set; } // foreign key to User
-        public User User { get; set; }//navigation property
+        public string UserId { get; set; } // foreign key to User
+        //public User User { get; set; }//navigation property
         
         //booking vs session
         public int SessionId { get; set; }//foreign key to session

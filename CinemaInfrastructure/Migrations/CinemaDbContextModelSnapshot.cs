@@ -42,16 +42,19 @@ namespace CinemaInfrastructure.Migrations
                     b.Property<bool>("Status")
                         .HasColumnType("bit");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("SeatId");
 
-                    b.HasIndex("SessionId");
-
                     b.HasIndex("UserId");
+
+                    b.HasIndex("SessionId", "SeatId")
+                        .IsUnique()
+                        .HasFilter("[Status] = 1");
 
                     b.ToTable("Bookings");
                 });
@@ -160,7 +163,8 @@ namespace CinemaInfrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("HallId");
+                    b.HasIndex("HallId", "RowNumber", "SeatNumber")
+                        .IsUnique();
 
                     b.ToTable("Seats");
                 });
@@ -227,37 +231,10 @@ namespace CinemaInfrastructure.Migrations
                     b.HasIndex("BookingId")
                         .IsUnique();
 
+                    b.HasIndex("TicketCode")
+                        .IsUnique();
+
                     b.ToTable("Tickets");
-                });
-
-            modelBuilder.Entity("CinemaDomain.Models.Entities.User", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<string>("PasswordHash")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Role")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("CinemaInfrastructure.Identity.ApplicationUser", b =>
@@ -463,7 +440,7 @@ namespace CinemaInfrastructure.Migrations
                     b.HasOne("CinemaDomain.Models.Entities.Seat", "Seat")
                         .WithMany("Bookings")
                         .HasForeignKey("SeatId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("CinemaDomain.Models.Entities.Session", "Session")
@@ -472,17 +449,15 @@ namespace CinemaInfrastructure.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("CinemaDomain.Models.Entities.User", "User")
-                        .WithMany("Bookings")
+                    b.HasOne("CinemaInfrastructure.Identity.ApplicationUser", null)
+                        .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Seat");
 
                     b.Navigation("Session");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("CinemaDomain.Models.Entities.MovieGenre", b =>
@@ -627,11 +602,6 @@ namespace CinemaInfrastructure.Migrations
                 });
 
             modelBuilder.Entity("CinemaDomain.Models.Entities.Session", b =>
-                {
-                    b.Navigation("Bookings");
-                });
-
-            modelBuilder.Entity("CinemaDomain.Models.Entities.User", b =>
                 {
                     b.Navigation("Bookings");
                 });

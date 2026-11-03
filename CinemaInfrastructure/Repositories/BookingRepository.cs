@@ -28,7 +28,7 @@ namespace CinemaInfrastructure.Repositories
             return await _context.Bookings.FirstOrDefaultAsync(b => b.Id == id, cancellationToken);
         }
 
-        public async Task<ICollection<Booking>> GetBookingsByUserId(int userId, CancellationToken cancellationToken)
+        public async Task<ICollection<Booking>> GetBookingsByUserId(string userId, CancellationToken cancellationToken)
         {
             return await _context.Bookings.Where(b => b.UserId == userId).ToListAsync(cancellationToken);
         }

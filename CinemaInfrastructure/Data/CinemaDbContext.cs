@@ -16,8 +16,7 @@ namespace CinemaInfrastructure.Data
         { 
         
         }
-
-        public DbSet<User> Users { get; set; }
+        //public DbSet<User> Users { get; set; }
         public DbSet<Movie> Movies { get; set; }
         public DbSet<Genre> Genres { get; set; }
         public DbSet<MovieGenre> MovieGenres { get; set; }
@@ -62,10 +61,11 @@ namespace CinemaInfrastructure.Data
                 .HasForeignKey(mg => mg.GenreId);
 
             //User vs Booking
-            modelBuilder.Entity<User>()
-                .HasMany(u => u.Bookings)
-                .WithOne(b => b.User)
-                .HasForeignKey(b => b.UserId);
+            modelBuilder.Entity<Booking>()
+                .HasOne<ApplicationUser>()
+                .WithMany()
+                .HasForeignKey(b => b.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             //Session vs Booking
             modelBuilder.Entity<Session>()
@@ -78,7 +78,7 @@ namespace CinemaInfrastructure.Data
                 .HasMany(s => s.Bookings)
                 .WithOne(b => b.Seat)
                 .HasForeignKey(b => b.SeatId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
 
             //Ticket vs Booking
             modelBuilder.Entity<Ticket>()
@@ -116,6 +116,13 @@ namespace CinemaInfrastructure.Data
                 entity.Property(e => e.RowNumber).IsRequired();
                 entity.Property(e => e.SeatNumber).IsRequired();
                 entity.Property(e => e.IsVip).IsRequired();
+
+                entity.HasIndex(e => new
+                {
+                    e.HallId,
+                    e.RowNumber,
+                    e.SeatNumber
+                }).IsUnique();
             });
 
             modelBuilder.Entity<Session>(entity =>
@@ -126,24 +133,28 @@ namespace CinemaInfrastructure.Data
                 entity.Property(e => e.Status).IsRequired();
             });
 
-            modelBuilder.Entity<User>(entity =>
-            {
-                entity.Property(e => e.UserName).IsRequired().HasMaxLength(100);
-                entity.Property(e => e.Email).IsRequired().HasMaxLength(256);
-                entity.Property(e => e.PasswordHash).IsRequired();
-                entity.Property(e => e.Role).IsRequired();
-            });
+            //modelBuilder.Entity<User>(entity =>
+            //{
+            //    entity.Property(e => e.UserName).IsRequired().HasMaxLength(100);
+            //    entity.Property(e => e.Email).IsRequired().HasMaxLength(256);
+            //    entity.Property(e => e.PasswordHash).IsRequired();
+            //    entity.Property(e => e.Role).IsRequired();
+            //});
 
             modelBuilder.Entity<Booking>(entity =>
             {
                 entity.Property(e => e.Status).IsRequired();
-                entity.Property(e => e.CreatedAt).IsRequired();
+                entity.Property(e => e.CreatedAt).IsRequired(); 
+                entity.HasIndex(e => new { e.SessionId, e.SeatId })
+                    .IsUnique()
+                    .HasFilter("[Status] = 1");
             });
 
             modelBuilder.Entity<Ticket>(entity =>
             {
                 entity.Property(e => e.TicketCode).IsRequired().HasMaxLength(100);
                 entity.Property(e => e.FinalPrice).HasPrecision(18, 2);
+                entity.HasIndex(e => e.TicketCode).IsUnique();
             });
         }
     }

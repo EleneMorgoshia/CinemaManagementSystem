@@ -1,4 +1,5 @@
 ﻿using CinemaDomain.Enums;
+using CinemaDomain.Models.DTOs;
 using CinemaDomain.Models.Entities;
 using System;
 using System.Collections.Generic;
@@ -10,15 +11,10 @@ namespace CinemaDomain.Interfaces
 {
     public interface IUserRepository
     {
-        Task<ICollection<User>> GetUsers(CancellationToken cancellationToken);
-        Task<User?> GetUserById(int userId, CancellationToken cancellationToken);
-
-        Task<User?> GetUserByEmail(string email, CancellationToken cancellationToken);
-        Task<Role?> GetUserRoleById(int id, CancellationToken cancellationToken);
-        Task<Role?> GetUserRoleByEmail(string email, CancellationToken cancellationToken);
-        Task AddUser(User user, CancellationToken cancellationToken);
-        void DeleteUser(User user);
-        void UpdateUser(User user);
-       
+        Task<ICollection<UserDTO>> GetUsers( CancellationToken cancellationToken);
+        Task<UserDTO?> GetUserByIdAsync(string userId);
+        Task<UserDTO?> GetUserByEmailAsync(string email);
+        Task UpdateUserAsync(string userId, UpdateUserDTO dto);
+        Task DeleteUserAsync(string userId);
     }
 }
