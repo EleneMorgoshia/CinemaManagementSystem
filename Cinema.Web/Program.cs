@@ -93,6 +93,10 @@ namespace Cinema.Web
             builder.Services.AddScoped<IMovieGenreService, MovieGenreService>();
             builder.Services.AddScoped<ISessionRepository, SessionRepository>();
             builder.Services.AddScoped<ISessionService, SessionService>();
+            builder.Services.AddScoped<IHallRepository, HallRepository>();
+            builder.Services.AddScoped<IHallService, HallService>();
+            builder.Services.AddScoped<ISeatRepository, SeatRepository>();
+            builder.Services.AddScoped<ISeatService, SeatService>();
             //AUTO MAPPER ADD
             builder.Services.AddAutoMapper(cfg => { }, typeof(UserProfile).Assembly);
 
