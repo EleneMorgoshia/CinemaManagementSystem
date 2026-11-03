@@ -17,14 +17,16 @@ namespace CinemaApplication.Services.Implementations
         private readonly IMovieRepository _movieRepository;
         private readonly IHallRepository _hallRepository;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IBookingRepository _bookingRepository;
         private readonly IMapper _mapper;
-        public SessionService(ISessionRepository sessionRepository, IUnitOfWork unitOfWork, IMapper mapper, IHallRepository hallRepository, IMovieRepository movieRepository)
+        public SessionService(ISessionRepository sessionRepository, IUnitOfWork unitOfWork, IMapper mapper, IHallRepository hallRepository, IMovieRepository movieRepository, IBookingRepository bookingRepository)
         {
             _sessionRepository = sessionRepository;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _hallRepository = hallRepository;
             _movieRepository = movieRepository;
+            _bookingRepository = bookingRepository;
         }
 
         public async Task<ICollection<SessionDTO>> GetSessionsAsync(CancellationToken cancellationToken)
@@ -80,7 +82,38 @@ namespace CinemaApplication.Services.Implementations
             return _mapper.Map<Session, SessionDTO>(session);
         }
 
-        
+        public async Task UpdateSession(int id , UpdateSessionDTO updateSessionDTO, CancellationToken cancellationToken)
+        {
+            if(id <= 0)
+                throw new ArgumentException("Id must be grater than 0");
+            ArgumentNullException.ThrowIfNull(updateSessionDTO);
+
+            var session = await _sessionRepository.GetSessionById(id, cancellationToken);
+            if (session == null)
+                throw new KeyNotFoundException($"Session with ID {id} was not found.");
+
+            _mapper.Map(updateSessionDTO, session); // გადავმაპე
+            await ValidateSessionAsync(session, cancellationToken);
+            _sessionRepository.UpdateSession(session);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task DeleteSession(int id, CancellationToken cancellationToken)
+        {
+            if(id <= 0)
+                throw new ArgumentException("Id must be grater than 0");
+
+            var session = await _sessionRepository.GetSessionById(id, cancellationToken);
+            if (session == null)
+                throw new KeyNotFoundException($"Session with ID {id} was not found.");
+
+            //chekc if the session has any bookings
+            var bookings = await _bookingRepository.GetBookingsBySessionId(id, cancellationToken);
+            if (bookings.Any())
+                throw new InvalidOperationException("Cannoe delete a session that has bookings");
+            _sessionRepository.DeleteSession(session);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+        }
         private async Task ValidateSessionAsync(Session session,CancellationToken cancellationToken)
         {
             ArgumentNullException.ThrowIfNull(session);
@@ -117,8 +150,12 @@ namespace CinemaApplication.Services.Implementations
 
             foreach (var existingSession in existingSessions)
             {
-                var existingSessionEnd = existingSession.StartsAt.AddMinutes(existingSession.Movie.DurationMinutes);
+                // Skip the current session during update to avoid self-overlap
+                if (session.Id != 0 && existingSession.Id == session.Id)
+                    continue;
 
+                var existingSessionEnd = existingSession.StartsAt.AddMinutes(existingSession.Movie.DurationMinutes);
+                
                 // Check session overlap
                 if (session.StartsAt < existingSessionEnd && existingSession.StartsAt < newSessionEnd)
                     throw new InvalidOperationException("This session overlaps with another session in the same hall.");
