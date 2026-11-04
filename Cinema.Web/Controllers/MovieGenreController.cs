@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Cinema.Web.Controllers
 {
+    [Authorize]
     [Route("api/[controller]/[action]")]
     [ApiController]
     public class MovieGenreController : ControllerBase
@@ -27,6 +28,7 @@ namespace Cinema.Web.Controllers
 
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> GetGenresByMovieId(int movieId, CancellationToken cancellationToken)
         {
             var genres = await _movieGenreService.GetGenresByMovieIdAsync(movieId, cancellationToken);
@@ -34,6 +36,7 @@ namespace Cinema.Web.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> GetMoviesByGenreId(int genreId, CancellationToken cancellationToken)
         {
             var movies = await _movieGenreService.GetMoviesByGenreIdAsync(genreId, cancellationToken);
@@ -41,6 +44,7 @@ namespace Cinema.Web.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AddGenreToMovie(int movieId, int genreId, CancellationToken cancellationToken)
         {
             var movieGenre = await _movieGenreService.AddGenreToMovieAsync(movieId, genreId, cancellationToken);
@@ -48,6 +52,7 @@ namespace Cinema.Web.Controllers
         }
 
         [HttpDelete("{movieId:int}/{genreId:int}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> RemoveGenreFromMovieAsync(int movieId, int genreId, CancellationToken cancellationToken)
         {
             await  _movieGenreService.RemoveGenreFromMovieAsync(movieId, genreId, cancellationToken);

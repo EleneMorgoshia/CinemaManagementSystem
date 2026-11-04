@@ -26,6 +26,7 @@ namespace Cinema.Web.Controllers
         }
 
         [HttpGet("{id:int}")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetSeatById(int id, CancellationToken cancellationToken)
         {
             var seat = await _seatService.GetSeatByIdAsync(id, cancellationToken);
@@ -33,6 +34,7 @@ namespace Cinema.Web.Controllers
         }
 
         [HttpGet("{hallId:int}")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetSeatsByHallId(int hallId, CancellationToken cancellationToken)
         {
             var seats = await _seatService.GetSeatsByHallIdAsync(hallId, cancellationToken);
@@ -40,6 +42,7 @@ namespace Cinema.Web.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async  Task<IActionResult> AddSeat(CreateSeatDTO createSeatDTO, CancellationToken cancellationToken)
         {
             var seat = await _seatService.AddSeatAsync(createSeatDTO, cancellationToken);
@@ -52,6 +55,7 @@ namespace Cinema.Web.Controllers
         }
 
         [HttpPut("{id:int}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateSeat(int id, UpdateSeatDTO updateSeatDTO, CancellationToken cancellationToken)
         {
             await _seatService.UpdateSeatAsync(id, updateSeatDTO, cancellationToken);
@@ -59,6 +63,7 @@ namespace Cinema.Web.Controllers
         }
 
         [HttpDelete("{id:int}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteSeat(int id, CancellationToken cancellationToken)
         {
             await _seatService.DeleteSeatAsync(id, cancellationToken);

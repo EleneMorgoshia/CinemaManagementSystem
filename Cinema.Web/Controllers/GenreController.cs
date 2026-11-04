@@ -27,6 +27,7 @@ namespace Cinema.Web.Controllers
         }
 
         [HttpGet("{id:int}")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetGenreById(int id, CancellationToken cancellationToken)
         {
             var genre = await _genreService.GetGenreByIdAsync(id, cancellationToken);
@@ -34,6 +35,7 @@ namespace Cinema.Web.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AddGenre(CreateGenreDTO createGenreDTO, CancellationToken cancellationToken)
         {
             if(createGenreDTO == null)
@@ -48,6 +50,7 @@ namespace Cinema.Web.Controllers
         }
 
         [HttpPut("{id:int}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateGenre(int id, UpdateGenreDTO updateGenreDTO, CancellationToken cancellationToken)
         {
             await _genreService.UpdateGenreAsync(id, updateGenreDTO, cancellationToken);
@@ -55,6 +58,7 @@ namespace Cinema.Web.Controllers
         }
 
         [HttpDelete("{id:int}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteGenre(int id, CancellationToken cancellationToken)
         {
             await _genreService.DeleteGenreAsync(id, cancellationToken);
@@ -62,6 +66,7 @@ namespace Cinema.Web.Controllers
         }
 
         [HttpGet("{movieName}")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetGenresByMovieName(string movieName, CancellationToken cancellationToken)
         {
             var genres = await _genreService.GetGenresByMovieNameAsync(movieName, cancellationToken);

@@ -26,6 +26,7 @@ namespace Cinema.Web.Controllers
         }
 
         [HttpGet("{id:int}")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetMovie(int id, CancellationToken cancellationToken)
         {
             var movie = await _movieService.GetMovieByIdAsync(id, cancellationToken);
@@ -33,6 +34,7 @@ namespace Cinema.Web.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AddMovie(CreateMovieDTO movieDto, CancellationToken cancellationToken)
         {
             if (movieDto == null)
@@ -46,6 +48,7 @@ namespace Cinema.Web.Controllers
         }
 
         [HttpPut("{id:int}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateMovie(int id, UpdateMovieDTO updateMovieDTO, CancellationToken cancellationToken)
         {
             await _movieService.UpdateMovieAsync(id, updateMovieDTO, cancellationToken);
@@ -53,6 +56,7 @@ namespace Cinema.Web.Controllers
         }
         
         [HttpDelete("{id:int}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteMovie(int id, CancellationToken cancellationToken)
         {
             await _movieService.DeleteMovieAsync(id, cancellationToken);

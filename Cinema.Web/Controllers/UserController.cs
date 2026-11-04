@@ -18,6 +18,7 @@ namespace Cinema.Web.Controllers
         }
 
         [HttpGet] //read
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetAllUsers(CancellationToken cancellationToken)
         {
             var users = await _userService.GetAllUsersAsync(cancellationToken);
@@ -25,8 +26,16 @@ namespace Cinema.Web.Controllers
         }
 
         [HttpGet("{id}")] //read
+        [Authorize(Roles = "Admin,Customer")]
         public async Task<IActionResult> GetUser(string id)
         {
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier); // ჩერეზ ტოკენიდან
+            if (string.IsNullOrWhiteSpace(currentUserId))
+                return Unauthorized();
+
+            if (!User.IsInRole("Admin") && currentUserId != id)
+                return Forbid();
+
             var user = await _userService.GetUserByIdAsync(id);
             return Ok(user);
         }
@@ -34,9 +43,13 @@ namespace Cinema.Web.Controllers
      
 
         [HttpPut("{id}")] //update
+        [Authorize(Roles = "Admin,Customer")]
         public async Task<IActionResult> UpdateUser(string id, [FromBody] UpdateUserDTO updateUserDto)
         {
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrWhiteSpace(currentUserId))
+                return Unauthorized();
+
             var isAdmin = User.IsInRole("Admin");
 
             if (!isAdmin && currentUserId != id)
@@ -48,9 +61,13 @@ namespace Cinema.Web.Controllers
 
 
         [HttpDelete("{id}")] //delete
+        [Authorize(Roles = "Admin,Customer")]
         public async Task<IActionResult> DeleteUser(string id)
         {
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrWhiteSpace(currentUserId))
+                return Unauthorized();
+
             var isAdmin = User.IsInRole("Admin");
 
             if (!isAdmin && currentUserId != id)

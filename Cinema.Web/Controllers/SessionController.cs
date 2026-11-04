@@ -26,6 +26,7 @@ namespace Cinema.Web.Controllers
         }
 
         [HttpGet("{id:int}")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetSessionById(int id, CancellationToken cancellationToken)
         {
             var session = await _sessionService.GetSessionByIdAsync(id, cancellationToken);
@@ -33,6 +34,7 @@ namespace Cinema.Web.Controllers
         }
 
         [HttpGet("{movieId:int}")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetSessionsByMovieId(int movieId, CancellationToken cancellationToken)
         {
             var session = await _sessionService.GetSessionsByMovieIdAsync(movieId, cancellationToken);
@@ -40,6 +42,7 @@ namespace Cinema.Web.Controllers
         }
 
         [HttpGet("{hallId:int}")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetSessionsByHallId(int hallId, CancellationToken cancellationToken)
         {
             var session = await _sessionService.GetSessionsByHallIdAsync(hallId, cancellationToken);
@@ -47,6 +50,7 @@ namespace Cinema.Web.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AddSession(CreateSessionDTO createSessionDto, CancellationToken cancellationToken)
         {
             var session = await _sessionService.AddSessionAsync(createSessionDto, cancellationToken);
@@ -59,6 +63,7 @@ namespace Cinema.Web.Controllers
         }
 
         [HttpPut("{id:int}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateSession(int id, UpdateSessionDTO updateSessionDTO, CancellationToken cancellationToken)
         {
             await _sessionService.UpdateSession(id, updateSessionDTO, cancellationToken);
@@ -66,6 +71,7 @@ namespace Cinema.Web.Controllers
         }
 
         [HttpDelete("{id:int}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteSession(int id, CancellationToken cancellationToken)
         {
             await _sessionService.DeleteSession(id, cancellationToken);

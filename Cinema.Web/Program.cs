@@ -85,7 +85,7 @@ namespace Cinema.Web
             builder.Services.AddScoped<ITicketRepository, TicketRepository>();
             builder.Services.AddScoped<ISeatRepository, SeatRepository>();
             builder.Services.AddScoped<IGenreRepository, GenreRepository>();
-            builder.Services.AddScoped<IUsermManagerService, UserManagerService>();
+            //builder.Services.AddScoped<IUsermManagerService, UserManagerService>();
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IMovieService, MovieService>();

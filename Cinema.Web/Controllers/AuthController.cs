@@ -1,5 +1,6 @@
 ﻿using CinemaApplication.Services.Interfaces;
 using CinemaDomain.Models.DTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,6 +19,7 @@ namespace Cinema.Web.Controllers
         }
 
         [HttpPost]
+        [AllowAnonymous]
         public async Task<IActionResult> Register(RegisterDTO userDTO, CancellationToken cancellationToken)
         {
             await _userService.RegistrUserAsync(userDTO, cancellationToken);
@@ -25,6 +27,7 @@ namespace Cinema.Web.Controllers
         }
 
         [HttpPost]
+        [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] LoginDTO loginDTO, CancellationToken cancellationToken)
         {
             var result = await _authService.LoginUserAsync(loginDTO, cancellationToken);
