@@ -107,9 +107,12 @@ namespace Cinema.Web
             builder.Services.AddAutoMapper(cfg => { }, typeof(UserProfile).Assembly);
 
             //add identity+(migration (update database) )
-            builder.Services.AddIdentityCore<ApplicationUser>()
-                .AddRoles<IdentityRole>()
-                .AddEntityFrameworkStores<CinemaDbContext>();
+            builder.Services.AddIdentityCore<ApplicationUser>(options =>
+            {
+                options.User.RequireUniqueEmail = true;
+            })
+            .AddRoles<IdentityRole>()
+            .AddEntityFrameworkStores<CinemaDbContext>();
 
             //+jwt
             var jwtKey = builder.Configuration["Jwt:Key"];

@@ -90,6 +90,13 @@ namespace CinemaInfrastructure.Data
             modelBuilder.Entity<MovieGenre>()
                 .HasKey(mg => new { mg.MovieId, mg.GenreId });
 
+            //EMAIL UNIQUE
+            modelBuilder.Entity<ApplicationUser>()
+                .HasIndex(u => u.NormalizedEmail)
+                .IsUnique()
+                .HasFilter("[NormalizedEmail] IS NOT NULL");
+
+
             //requirments
             modelBuilder.Entity<Movie>(entity =>
             {
