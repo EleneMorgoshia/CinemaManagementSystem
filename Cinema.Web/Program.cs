@@ -9,6 +9,7 @@ using CinemaInfrastructure.Identity;
 using CinemaInfrastructure.Repositories;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -18,7 +19,7 @@ namespace Cinema.Web
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -97,11 +98,17 @@ namespace Cinema.Web
             builder.Services.AddScoped<IHallService, HallService>();
             builder.Services.AddScoped<ISeatRepository, SeatRepository>();
             builder.Services.AddScoped<ISeatService, SeatService>();
+            builder.Services.AddScoped<IBookingRepository, BookingRepository>();
+            builder.Services.AddScoped<IBookingService, BookingService>();
+            builder.Services.AddScoped<ITicketRepository,  TicketRepository>();
+            builder.Services.AddScoped<ITicketService, TicketService>();
+
             //AUTO MAPPER ADD
             builder.Services.AddAutoMapper(cfg => { }, typeof(UserProfile).Assembly);
 
             //add identity+(migration (update database) )
             builder.Services.AddIdentityCore<ApplicationUser>()
+                .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<CinemaDbContext>();
 
             //+jwt
@@ -149,6 +156,15 @@ namespace Cinema.Web
             app.UseAuthentication();
             app.UseAuthorization();
             app.MapControllers();
+
+            //role seeder add ++
+            using (var scope = app.Services.CreateScope())
+            {
+                await RoleSeeder. SeedRolesAsync(scope.ServiceProvider);
+                await AdminSeeder.SeedAdminAsync(scope.ServiceProvider, app.Configuration);
+            }///// role seeder add +++
+
+          
 
             app.Run();
         }

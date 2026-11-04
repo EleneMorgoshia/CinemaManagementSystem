@@ -3,6 +3,8 @@ using CinemaApplication.Services.Interfaces;
 using CinemaDomain.Interfaces;
 using CinemaDomain.Models.DTOs;
 using CinemaDomain.Models.Entities;
+using CinemaInfrastructure.Identity;
+using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,19 +16,23 @@ namespace CinemaApplication.Services.Implementations
     public class BookingService : IBookingService
     {
         private readonly IBookingRepository _bookingRepository;
-        private readonly IUsermManagerService _userManagerService;
+        //private readonly IUsermManagerService _userManagerService;
+        private readonly UserManager<ApplicationUser> _userManager;
         private readonly ISessionRepository _sessionRepository;
         private readonly ISeatRepository _seatRepository;
+        private readonly ITicketService _ticketService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        public BookingService(IBookingRepository bookingRepository, IUnitOfWork unitOfWork, IMapper mapper, IUsermManagerService usermManagerService, ISeatRepository seatRepository, ISessionRepository sessionRepository)
+        public BookingService(IBookingRepository bookingRepository, IUnitOfWork unitOfWork, IMapper mapper, UserManager<ApplicationUser> userManager, ISeatRepository seatRepository, ISessionRepository sessionRepository, ITicketService ticketService)
         {
             _bookingRepository = bookingRepository;
-            _userManagerService = usermManagerService;
+            //_userManagerService = usermManagerService;
+            _userManager = userManager;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _seatRepository = seatRepository;
             _sessionRepository = sessionRepository;
+            _ticketService = ticketService;
         }
 
         public async Task<ICollection<BookingDTO>> GetAllBookingsAsync(CancellationToken cancellationToken)
@@ -35,14 +41,19 @@ namespace CinemaApplication.Services.Implementations
             return bookings.Select(_mapper.Map<Booking, BookingDTO>).ToList();
         }
         
-        public async Task<BookingDTO> GetBookingByIdAsync(int id, CancellationToken cancellationToken)
+        public async Task<BookingDTO> GetBookingByIdAsync(int id, string userId, bool isAdmin, CancellationToken cancellationToken)
         {
             if (id <= 0)
                 throw new ArgumentOutOfRangeException(nameof(id), "Booking ID must be greater than zero.");
+            if (string.IsNullOrWhiteSpace(userId))
+                throw new ArgumentException("Invalid user ID.", nameof(userId));
+
             var booking = await _bookingRepository.GetBookingById(id, cancellationToken);
             if(booking == null)
                 throw new KeyNotFoundException($"Booking with ID {id} was not found.");
 
+            if (booking.UserId != userId && !isAdmin)
+                throw new UnauthorizedAccessException("You cannot access another user's booking.");
             return _mapper.Map<Booking,BookingDTO>(booking);
         }
 
@@ -52,7 +63,7 @@ namespace CinemaApplication.Services.Implementations
                 throw new ArgumentException("Invalid user ID.", nameof(userId));
 
 
-            var user = await _userManagerService.GetUserByIdAsync(userId);
+            var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
                 throw new KeyNotFoundException($"User with ID {userId} was not found.");
 
@@ -79,12 +90,21 @@ namespace CinemaApplication.Services.Implementations
             ArgumentNullException.ThrowIfNull(creatingBookingDTO);
             await ValidateBookingAsync(creatingBookingDTO, userId, cancellationToken);
 
+            //session - standard price & vip price
+            var session = await _sessionRepository.GetSessionById(creatingBookingDTO.SessionId, cancellationToken);
+            var seat = await _seatRepository.GetSeatById(creatingBookingDTO.SeatId, cancellationToken);
+            if (session == null || seat == null)
+                throw new InvalidOperationException("Session or seat not found.");
+
+            decimal finalPrice = seat.IsVip ? session.VipPrice : session.StandardPrice;
+
             var booking = _mapper.Map<CreateBookingDTO, Booking>(creatingBookingDTO);
             booking.UserId = userId;
             booking.Status = true;
             booking.CreatedAt = DateTime.UtcNow;
 
             await _bookingRepository.AddBooking(booking, cancellationToken);
+            await _ticketService.AddTicketAsync(booking, finalPrice, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             return _mapper.Map<BookingDTO>(booking);
         }
@@ -106,8 +126,8 @@ namespace CinemaApplication.Services.Implementations
             if( booking == null )
                 throw new KeyNotFoundException("Booking not found.");
           
-            var user = await _userManagerService.GetUserByIdAsync(userId);
-            if( user == null )
+            var user = await _userManager.FindByIdAsync(userId);
+            if ( user == null )
                 throw new KeyNotFoundException($"User with ID {userId} was not found.");
             
             if (booking.UserId != userId)
@@ -148,8 +168,10 @@ namespace CinemaApplication.Services.Implementations
             if (string.IsNullOrWhiteSpace(userId))
                 throw new ArgumentException("Invalid user ID.");
 
-            await _userManagerService.GetUserByIdAsync(userId);
-
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+                throw new KeyNotFoundException( $"User with ID {userId} was not found.");
+            
             var session = await _sessionRepository.GetSessionById(dto.SessionId, cancellationToken);
             if (session == null)
                 throw new KeyNotFoundException("Session not found.");

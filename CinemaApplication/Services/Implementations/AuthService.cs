@@ -1,4 +1,5 @@
 ﻿using CinemaApplication.Services.Interfaces;
+using CinemaDomain.Enums;
 using CinemaDomain.Models.DTOs;
 using CinemaInfrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
@@ -26,7 +27,7 @@ namespace CinemaApplication.Services.Implementations
         }
 
         //creating token
-        private AuthResponseDTO GenerateJwtToken(ApplicationUser user)
+        private async Task<AuthResponseDTO> GenerateJwtToken(ApplicationUser user)
         {
             var jwtKey = _configuration["Jwt:Key"];
             var issuer = _configuration["Jwt:Issuer"];
@@ -40,6 +41,16 @@ namespace CinemaApplication.Services.Implementations
                 new Claim(ClaimTypes.Email, user.Email),
                 new Claim(ClaimTypes.Name, user.UserName)
             };
+
+
+            // Get user roles from ASP.NET Core Identity
+            var roles = await _userManager.GetRolesAsync(user);
+
+            // Add roles to JWT claims
+            foreach (var role in roles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
 
@@ -70,7 +81,7 @@ namespace CinemaApplication.Services.Implementations
             {
                 throw new UnauthorizedAccessException("Invalid email or password.");
             }
-            return GenerateJwtToken(user);
+            return await GenerateJwtToken(user);
         }
 
     }

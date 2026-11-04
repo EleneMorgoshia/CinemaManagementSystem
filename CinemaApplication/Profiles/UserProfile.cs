@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using CinemaDomain.Models.DTOs;
 using CinemaDomain.Models.Entities;
+using CinemaInfrastructure.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,14 +15,8 @@ namespace CinemaApplication.Profiles
     {
         public UserProfile()
         {
-            CreateMap<User, UserDTO>();
-            CreateMap<UserDTO, User>();
-            CreateMap<CreateUserDTO, User>();
-            CreateMap<User, CreateUserDTO>();
-            CreateMap<User, UpdateUserDTO>();
-            CreateMap<UpdateUserDTO, User>();
-            CreateMap<CreateUserDTO, UserDTO>();
-            //reverseMap
+            CreateMap<ApplicationUser, UserDTO>();
+
         }
     }
 }

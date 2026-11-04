@@ -43,15 +43,15 @@ namespace CinemaInfrastructure.Repositories
             await _context.Tickets.AddAsync(ticket, cancellationToken);
         }
 
-        public void Update(Ticket ticket)
-        {
-            _context.Tickets.Update(ticket);
-        }
+        //public void Update(Ticket ticket)
+        //{
+        //    _context.Tickets.Update(ticket);
+        //}
 
-        public void Delete(Ticket ticket)
-        {
-            _context.Tickets.Remove(ticket);
-        }
+        //public void Delete(Ticket ticket)
+        //{
+        //    _context.Tickets.Remove(ticket);
+        //}
 
     }
 }

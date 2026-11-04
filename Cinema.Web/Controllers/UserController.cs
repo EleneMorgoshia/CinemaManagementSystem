@@ -11,8 +11,8 @@ namespace Cinema.Web.Controllers
     [Route("api/[Controller]/[action]")]
     public class UserController : ControllerBase //ამით ვეუბნები რომ დამიბრუნოს მარტო  HTTP სტატუსები
     {
-        private readonly IUsermManagerService _userService;
-        public UserController(IUsermManagerService userService)
+        private readonly IUserService _userService;
+        public UserController(IUserService userService)
         {
             _userService = userService;
         }

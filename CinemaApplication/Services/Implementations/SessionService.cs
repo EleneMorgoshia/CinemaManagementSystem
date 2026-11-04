@@ -75,6 +75,7 @@ namespace CinemaApplication.Services.Implementations
         {
             ArgumentNullException.ThrowIfNull(createSessionDto);
             var session = _mapper.Map<CreateSessionDTO, Session>(createSessionDto);
+            session.Status = true;
             await ValidateSessionAsync(session, cancellationToken);
 
             await _sessionRepository.AddSession(session, cancellationToken);

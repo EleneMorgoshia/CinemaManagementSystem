@@ -36,10 +36,10 @@ namespace CinemaApplication.Services.Implementations
             if(id <= 0)
                 throw new ArgumentOutOfRangeException(nameof(id), "Hall ID must be greater than zero.");
 
-            var movie = await _hallRepository.GetHallById(id, cancellationToken);
-            if(movie == null)
+            var hall = await _hallRepository.GetHallById(id, cancellationToken);
+            if(hall == null)
                 throw new ArgumentException($"There is no hall with {id} id");
-            return _mapper.Map<Hall, HallDTO>(movie);
+            return _mapper.Map<Hall, HallDTO>(hall);
         }
 
         public async Task<HallDTO> AddHallAsync(CreateHallDTO createHallDTO, CancellationToken cancellationToken)
@@ -51,7 +51,7 @@ namespace CinemaApplication.Services.Implementations
             
             await _hallRepository.AddHall(hall, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
-            return _mapper.Map<CreateHallDTO, HallDTO>(createHallDTO);
+            return _mapper.Map<HallDTO>(hall);
         }
 
         public async Task UpdateHallAsync(int id, UpdateHallDTO updateHallDTO, CancellationToken cancellationToken)

@@ -14,7 +14,7 @@ namespace CinemaDomain.Interfaces
         Task<Ticket?> GetTicketByBookingId(int bookingId, CancellationToken cancellationToken);
         Task<Ticket?> GetTicketByCode(string ticketCode, CancellationToken cancellationToken);
         Task AddTicket(Ticket ticket, CancellationToken cancellationToken);
-        void Update(Ticket ticket);
-        void Delete(Ticket ticket);
+        //void Update(Ticket ticket);
+        //void Delete(Ticket ticket);
     }
 }
