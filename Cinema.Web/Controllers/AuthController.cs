@@ -35,5 +35,12 @@ namespace Cinema.Web.Controllers
                 return Unauthorized("Invalid email or password");
             return Ok(result);
         }
+
+        [HttpPost]
+        [Authorize]
+        public IActionResult Logout()
+        {
+            return NoContent();
+        }
     }
 }

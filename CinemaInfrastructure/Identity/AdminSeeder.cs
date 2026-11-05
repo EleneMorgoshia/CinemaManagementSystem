@@ -11,7 +11,7 @@ namespace CinemaInfrastructure.Identity
 {
     public class AdminSeeder
     {
-        public static async Task SeedAdminAsync(IServiceProvider serviceProvider,IConfiguration configuration)
+        public static async Task SeedAdminAsync(IServiceProvider serviceProvider, IConfiguration configuration)
         {
             // 1. Get UserManager from Dependency Injection
             var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();

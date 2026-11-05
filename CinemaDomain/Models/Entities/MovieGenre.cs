@@ -8,11 +8,11 @@ namespace CinemaDomain.Models.Entities
 {
     public class MovieGenre
     {
-        public int MovieId { get; set; } // Foreign Key
-        public int GenreId { get; set; } // Foreign key
+        public int MovieId { get; set; } 
+        public int GenreId { get; set; } 
 
-        public Movie Movie { get; set; } // movie navigation property
-        public Genre Genre { get; set; } // genre navigation property 
+        public Movie Movie { get; set; } 
+        public Genre Genre { get; set; } 
     }
 }
 

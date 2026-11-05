@@ -20,7 +20,7 @@ namespace CinemaDomain.Models.DTOs
 
         [Required]
         [EnumDataType(typeof(AgeRating))]
-        public AgeRating AgeRating { get; set; }
+        public AgeRating? AgeRating { get; set; }
 
         [Required]
         [MaxLength(2000)]

@@ -76,5 +76,13 @@ namespace Cinema.Web.Controllers
             await _userService.DeleteUserAsync(id);
             return NoContent();
         }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost("{userId}")]
+        public async Task<IActionResult> MakeAdmin(string userId)
+        {
+            await _userService.MakeAdminAsync(userId);
+            return Ok(new { message = "Admin role assigned successfully." });
+        }
     }
 }

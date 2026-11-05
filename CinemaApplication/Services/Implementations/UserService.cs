@@ -126,5 +126,25 @@ namespace CinemaApplication.Services.Implementations
             if (!result.Succeeded)
                 throw new InvalidOperationException(string.Join(", ", result.Errors.Select(e => e.Description)));
         }
+
+
+        public async Task MakeAdminAsync(string userId)
+        {
+            if (string.IsNullOrWhiteSpace(userId))
+                throw new ArgumentException("Invalid user ID.", nameof(userId));
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+                throw new KeyNotFoundException($"User with ID {userId} was not found.");
+
+            if (await _userManager.IsInRoleAsync(user, "Admin"))
+                throw new InvalidOperationException("User is already an admin.");
+
+            var result = await _userManager.AddToRoleAsync(user, "Admin");
+
+            if (!result.Succeeded)
+                throw new InvalidOperationException(string.Join(", ", result.Errors.Select(e => e.Description)));
+        }
+
     }
 }

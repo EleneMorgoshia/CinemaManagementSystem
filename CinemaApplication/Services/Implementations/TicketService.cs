@@ -60,7 +60,7 @@ namespace CinemaApplication.Services.Implementations
         public async Task<TicketDTO> GetTicketByBookingIdAsync(int bookingId, string userId, bool isAdmin, CancellationToken cancellationToken)
         {
             if (bookingId <= 0)
-                throw new ArgumentOutOfRangeException(nameof(bookingId), "Ticket ID must be greater than zero.");
+                throw new ArgumentOutOfRangeException(nameof(bookingId), "Booking ID must be greater than zero.");
 
             var ticket = await _ticketRepository.GetTicketByBookingId(bookingId, cancellationToken);
             if(ticket == null)

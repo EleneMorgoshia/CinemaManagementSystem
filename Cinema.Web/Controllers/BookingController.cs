@@ -45,9 +45,17 @@ namespace Cinema.Web.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Customer")]
         public async Task<IActionResult> GetBookingsByUserId(string userId, CancellationToken cancellationToken)
         {
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrWhiteSpace(currentUserId))
+                return Unauthorized();
+
+            if (!User.IsInRole("Admin") && userId != currentUserId)
+                return Forbid();
+
             var bookings = await _bookingService.GetBookingsByUserIdAsync(userId, cancellationToken);
             return Ok(bookings);
         }
@@ -89,11 +97,12 @@ namespace Cinema.Web.Controllers
             return NoContent();
         }
 
-        //[HttpDelete("{bookingId:int}")]
-        //public async Task<IActionResult> DeleteBooking(int bookingId, CancellationToken cancellationToken)
-        //{
-        //    await _bookingService.DeleteBookingAsync(bookingId, cancellationToken);
-        //    return NoContent();
-        //}
+        [Authorize(Roles = "Admin")]
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> DeleteBooking(int id,CancellationToken cancellationToken)
+        {
+            await _bookingService.DeleteBookingAsync(id, cancellationToken);
+            return NoContent();
+        }
     }
 }

@@ -192,8 +192,7 @@ namespace CinemaApplication.Services.Implementations
             if (seat.HallId != session.HallId)
                 throw new InvalidOperationException("Seat does not belong to the session's hall.");
 
-            var isBooked = await _bookingRepository.IsSeatBookedForSession(
-                dto.SeatId, dto.SessionId, cancellationToken);
+            var isBooked = await _bookingRepository.IsSeatBookedForSession(dto.SeatId, dto.SessionId, cancellationToken);
 
             if (isBooked)
                 throw new InvalidOperationException("This seat is already booked.");

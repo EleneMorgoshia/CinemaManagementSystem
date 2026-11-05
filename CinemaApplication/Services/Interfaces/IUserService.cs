@@ -17,5 +17,6 @@ namespace CinemaApplication.Services.Interfaces
         Task<UserDTO> GetUserByEmailAsync(string email);
         Task<UserDTO> UpdateUserAsync(string id, UpdateUserDTO dto);
         Task DeleteUserAsync(string id);
+        Task MakeAdminAsync(string userId);
     }
 }
