@@ -15,7 +15,6 @@ namespace CinemaDomain.Models.DTOs
         public string UserName { get;set;  }
         [Required]
         public string Email {  get; set; }
-        //[Required]
-        //public Role Role {  get; set; }
+
     }
 }

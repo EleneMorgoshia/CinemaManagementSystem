@@ -42,7 +42,7 @@ namespace Cinema.Web.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, SuperAdmin")]
         public async  Task<IActionResult> AddSeat(CreateSeatDTO createSeatDTO, CancellationToken cancellationToken)
         {
             var seat = await _seatService.AddSeatAsync(createSeatDTO, cancellationToken);
@@ -55,7 +55,7 @@ namespace Cinema.Web.Controllers
         }
 
         [HttpPut("{id:int}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, SuperAdmin")]
         public async Task<IActionResult> UpdateSeat(int id, UpdateSeatDTO updateSeatDTO, CancellationToken cancellationToken)
         {
             await _seatService.UpdateSeatAsync(id, updateSeatDTO, cancellationToken);
@@ -63,7 +63,7 @@ namespace Cinema.Web.Controllers
         }
 
         [HttpDelete("{id:int}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, SuperAdmin")]
         public async Task<IActionResult> DeleteSeat(int id, CancellationToken cancellationToken)
         {
             await _seatService.DeleteSeatAsync(id, cancellationToken);

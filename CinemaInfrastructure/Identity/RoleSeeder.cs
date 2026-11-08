@@ -17,7 +17,7 @@ namespace CinemaInfrastructure.Identity
                 GetRequiredService<RoleManager<IdentityRole>>();
 
             var roles = new[]
-            { "Admin", "Customer" };
+            { "Admin", "Customer", "SuperAdmin" };
 
             foreach (var role in roles)
             {

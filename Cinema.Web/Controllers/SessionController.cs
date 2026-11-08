@@ -50,7 +50,7 @@ namespace Cinema.Web.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, SuperAdmin")]
         public async Task<IActionResult> AddSession(CreateSessionDTO createSessionDto, CancellationToken cancellationToken)
         {
             var session = await _sessionService.AddSessionAsync(createSessionDto, cancellationToken);
@@ -63,7 +63,7 @@ namespace Cinema.Web.Controllers
         }
 
         [HttpPut("{id:int}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, SuperAdmin")]
         public async Task<IActionResult> UpdateSession(int id, UpdateSessionDTO updateSessionDTO, CancellationToken cancellationToken)
         {
             await _sessionService.UpdateSession(id, updateSessionDTO, cancellationToken);
@@ -71,7 +71,7 @@ namespace Cinema.Web.Controllers
         }
 
         [HttpDelete("{id:int}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, SuperAdmin")]
         public async Task<IActionResult> DeleteSession(int id, CancellationToken cancellationToken)
         {
             await _sessionService.DeleteSession(id, cancellationToken);

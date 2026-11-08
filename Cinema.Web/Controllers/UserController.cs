@@ -17,23 +17,22 @@ namespace Cinema.Web.Controllers
             _userService = userService;
         }
 
-        [HttpGet] //read
-        [Authorize(Roles = "Admin")]
+        [HttpGet] 
+        [Authorize(Roles = "Admin, SuperAdmin")]
         public async Task<IActionResult> GetAllUsers(CancellationToken cancellationToken)
         {
             var users = await _userService.GetAllUsersAsync(cancellationToken);
             return Ok(users);
         }
 
-        [HttpGet("{id}")] //read
-        [Authorize(Roles = "Admin,Customer")]
+        [HttpGet("{id}")] 
         public async Task<IActionResult> GetUser(string id)
         {
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier); // ჩერეზ ტოკენიდან
             if (string.IsNullOrWhiteSpace(currentUserId))
                 return Unauthorized();
 
-            if (!User.IsInRole("Admin") && currentUserId != id)
+            if (!User.IsInRole("Admin") && !User.IsInRole("SuperAdmin") && currentUserId != id)
                 return Forbid();
 
             var user = await _userService.GetUserByIdAsync(id);
@@ -42,47 +41,81 @@ namespace Cinema.Web.Controllers
 
      
 
-        [HttpPut("{id}")] //update
-        [Authorize(Roles = "Admin,Customer")]
+        [HttpPut("{id}")]
         public async Task<IActionResult> UpdateUser(string id, [FromBody] UpdateUserDTO updateUserDto)
         {
-            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrWhiteSpace(currentUserId))
-                return Unauthorized();
+            try
+            {
+                var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrWhiteSpace(currentUserId))
+                    return Unauthorized();
 
-            var isAdmin = User.IsInRole("Admin");
-
-            if (!isAdmin && currentUserId != id)
+                var updatedUser = await _userService.UpdateUserAsync(currentUserId, id, updateUserDto);
+                return Ok(updatedUser);
+            }
+            catch (UnauthorizedAccessException) 
+            {
                 return Forbid();
-
-            var updatedUser = await _userService.UpdateUserAsync(id, updateUserDto);
-            return Ok(updatedUser);
+            }
         }
 
 
-        [HttpDelete("{id}")] //delete
-        [Authorize(Roles = "Admin,Customer")]
+        [HttpDelete("{id}")] 
         public async Task<IActionResult> DeleteUser(string id)
         {
-            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrWhiteSpace(currentUserId))
-                return Unauthorized();
+            try
+            {
+                var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrWhiteSpace(currentUserId))
+                    return Unauthorized();
 
-            var isAdmin = User.IsInRole("Admin");
-
-            if (!isAdmin && currentUserId != id)
+                await _userService.DeleteUserAsync(currentUserId, id);
+                return NoContent();
+            }
+            catch (UnauthorizedAccessException)
+            {
                 return Forbid();
-
-            await _userService.DeleteUserAsync(id);
-            return NoContent();
+            }
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "SuperAdmin")]
         [HttpPost("{userId}")]
         public async Task<IActionResult> MakeAdmin(string userId)
         {
-            await _userService.MakeAdminAsync(userId);
-            return Ok(new { message = "Admin role assigned successfully." });
+            try
+            {
+                await _userService.MakeAdminAsync(userId);
+                return Ok(new { message = "Admin role assigned successfully." });
+            }
+            catch(UnauthorizedAccessException)
+            {
+                return Forbid();
+            }
+        }
+
+        
+        [Authorize(Roles = "SuperAdmin")]
+        [HttpDelete("{userId}")]
+        public async Task<IActionResult> RemoveAdminRole(string userId)
+        {
+            try
+            {
+                await _userService.RemoveAdminRoleAsync(userId);
+                return NoContent();
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Forbid();
+            }
+        }
+
+        [Authorize(Roles = "SuperAdmin")]
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetUserRoleById(string id)
+        {
+            var userRoles = await _userService.GetUserRoleByIdAsync(id);
+            return Ok(userRoles);
+
         }
     }
 }

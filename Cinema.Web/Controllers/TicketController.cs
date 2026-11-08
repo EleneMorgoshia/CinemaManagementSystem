@@ -19,7 +19,7 @@ namespace Cinema.Web.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, SuperAdmin")]
         public async Task<IActionResult> GetAllTickets(CancellationToken cancellationToken)
         {
             var tickets = await _ticketService.GetAllTicketsAsync(cancellationToken);
@@ -27,7 +27,6 @@ namespace Cinema.Web.Controllers
         }
 
         [HttpGet("{id:int}")]
-        [Authorize(Roles = "Admin,Customer")]
         public async Task<IActionResult> GetTicketById(int id, CancellationToken cancellationToken)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier); //ClaimTypes - მიმდინარე მომხმარებლის ID-ს ვიღებთ JWT ტოკენიდან(ტოკენში ინახება მიმდინარე მომხმარებლის აიდი)
@@ -35,14 +34,13 @@ namespace Cinema.Web.Controllers
             if (string.IsNullOrWhiteSpace(userId))
                 return Unauthorized();
 
-            var isAdmin = User.IsInRole("Admin");
+            var isAdmin = User.IsInRole("Admin") || User.IsInRole("SuperAdmin");
 
             var ticket = await _ticketService.GetTicketByIdAsync(id, userId, isAdmin, cancellationToken);
             return Ok(ticket);
         }
 
         [HttpGet("{ticketCode}")]
-        [Authorize(Roles = "Admin,Customer")]
         public async Task<IActionResult> GetTicketByCode(string ticketCode, CancellationToken cancellationToken)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier); //ClaimTypes - მიმდინარე მომხმარებლის ID-ს ვიღებთ JWT ტოკენიდან(ტოკენში ინახება მიმდინარე მომხმარებლის აიდი)
@@ -50,14 +48,13 @@ namespace Cinema.Web.Controllers
             if (string.IsNullOrWhiteSpace(userId))
                 return Unauthorized();
 
-            var isAdmin = User.IsInRole("Admin");
-            
+            var isAdmin = User.IsInRole("Admin") || User.IsInRole("SuperAdmin");
+
             var ticket = await _ticketService.GetTicketByCodeAsync(ticketCode, userId, isAdmin, cancellationToken);
             return Ok(ticket);
         }
 
         [HttpGet("{bookingId:int}")]
-        [Authorize(Roles = "Admin,Customer")]
         public async Task<IActionResult> GetTicketByBookingId(int bookingId, CancellationToken cancellationToken)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier); //ClaimTypes - მიმდინარე მომხმარებლის ID-ს ვიღებთ JWT ტოკენიდან(ტოკენში ინახება მიმდინარე მომხმარებლის აიდი)
@@ -65,7 +62,7 @@ namespace Cinema.Web.Controllers
             if (string.IsNullOrWhiteSpace(userId))
                 return Unauthorized();
 
-            var isAdmin = User.IsInRole("Admin");
+            var isAdmin = User.IsInRole("Admin") || User.IsInRole("SuperAdmin");
 
             var ticket = await _ticketService.GetTicketByBookingIdAsync(bookingId, userId, isAdmin, cancellationToken);
             return Ok(ticket);

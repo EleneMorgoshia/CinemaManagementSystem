@@ -15,8 +15,10 @@ namespace CinemaApplication.Services.Interfaces
         Task<ICollection<UserDTO>> GetAllUsersAsync(CancellationToken cancellationToken);
         Task<UserDTO> GetUserByIdAsync(string id);
         Task<UserDTO> GetUserByEmailAsync(string email);
-        Task<UserDTO> UpdateUserAsync(string id, UpdateUserDTO dto);
-        Task DeleteUserAsync(string id);
+        Task<UserDTO> UpdateUserAsync(string currentUserId, string id, UpdateUserDTO dto);
+        Task DeleteUserAsync(string currentUserId, string id);
         Task MakeAdminAsync(string userId);
+        Task RemoveAdminRoleAsync(string userId);
+        Task<ICollection<string>> GetUserRoleByIdAsync(string id);
     }
 }

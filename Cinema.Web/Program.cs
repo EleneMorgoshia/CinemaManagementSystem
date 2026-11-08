@@ -164,7 +164,8 @@ namespace Cinema.Web
             using (var scope = app.Services.CreateScope())
             {
                 await RoleSeeder. SeedRolesAsync(scope.ServiceProvider);
-                await AdminSeeder.SeedAdminAsync(scope.ServiceProvider, app.Configuration);
+
+                await SuperAdminSeeder.SeedSuperAdminAsync(scope.ServiceProvider,app.Configuration);
             }///// role seeder add +++
 
           

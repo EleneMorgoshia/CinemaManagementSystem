@@ -35,7 +35,7 @@ namespace Cinema.Web.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, SuperAdmin")]
         public async Task<IActionResult> AddGenre(CreateGenreDTO createGenreDTO, CancellationToken cancellationToken)
         {
             if(createGenreDTO == null)
@@ -50,7 +50,7 @@ namespace Cinema.Web.Controllers
         }
 
         [HttpPut("{id:int}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, SuperAdmin")]
         public async Task<IActionResult> UpdateGenre(int id, UpdateGenreDTO updateGenreDTO, CancellationToken cancellationToken)
         {
             await _genreService.UpdateGenreAsync(id, updateGenreDTO, cancellationToken);
@@ -58,7 +58,7 @@ namespace Cinema.Web.Controllers
         }
 
         [HttpDelete("{id:int}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, SuperAdmin")]
         public async Task<IActionResult> DeleteGenre(int id, CancellationToken cancellationToken)
         {
             await _genreService.DeleteGenreAsync(id, cancellationToken);

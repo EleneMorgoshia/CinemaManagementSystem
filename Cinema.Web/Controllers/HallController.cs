@@ -34,7 +34,7 @@ namespace Cinema.Web.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, SuperAdmin")]
         public async Task<IActionResult> AddHall(CreateHallDTO createHallDTO, CancellationToken cancellationToken)
         {
             var hall = await _hallService.AddHallAsync(createHallDTO, cancellationToken);
@@ -47,7 +47,7 @@ namespace Cinema.Web.Controllers
         }
 
         [HttpPut("{id:int}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, SuperAdmin")]
         public async Task<IActionResult> UpdateHall(int id, UpdateHallDTO updateHallDTO, CancellationToken cancellationToken)
         {
             await _hallService.UpdateHallAsync(id, updateHallDTO, cancellationToken);
@@ -55,7 +55,7 @@ namespace Cinema.Web.Controllers
         }
 
         [HttpDelete("{id:int}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, SuperAdmin")]
         public async Task<IActionResult> DeleteHall(int id, CancellationToken cancellationToken)
         {
             await _hallService.DeleteHallAsync(id, cancellationToken);

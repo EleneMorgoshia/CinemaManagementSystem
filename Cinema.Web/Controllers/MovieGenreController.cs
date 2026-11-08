@@ -44,7 +44,7 @@ namespace Cinema.Web.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, SuperAdmin")]
         public async Task<IActionResult> AddGenreToMovie(int movieId, int genreId, CancellationToken cancellationToken)
         {
             var movieGenre = await _movieGenreService.AddGenreToMovieAsync(movieId, genreId, cancellationToken);
@@ -52,7 +52,7 @@ namespace Cinema.Web.Controllers
         }
 
         [HttpDelete("{movieId:int}/{genreId:int}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, SuperAdmin")]
         public async Task<IActionResult> RemoveGenreFromMovieAsync(int movieId, int genreId, CancellationToken cancellationToken)
         {
             await  _movieGenreService.RemoveGenreFromMovieAsync(movieId, genreId, cancellationToken);
