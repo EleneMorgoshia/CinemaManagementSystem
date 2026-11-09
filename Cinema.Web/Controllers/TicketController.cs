@@ -18,6 +18,11 @@ namespace Cinema.Web.Controllers
             _ticketService = ticketService;
         }
 
+        /// <summary>
+        /// Returns all tickets. Only Admins and SuperAdmins can view them.
+        /// </summary>
+        /// <param></param>
+        /// <returns>A list of all tickets.</returns>
         [HttpGet]
         [Authorize(Roles = "Admin, SuperAdmin")]
         public async Task<IActionResult> GetAllTickets(CancellationToken cancellationToken)
@@ -26,6 +31,12 @@ namespace Cinema.Web.Controllers
             return Ok(tickets);
         }
 
+        /// <summary>
+        /// Returns a ticket by its ID. The owner, Admins, and SuperAdmins can view it.
+        /// </summary>
+        /// <param name="id">The ID of the ticket to retrieve.</param>
+        /// <param></param>
+        /// <returns>The requested ticket.</returns>
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetTicketById(int id, CancellationToken cancellationToken)
         {
@@ -40,6 +51,12 @@ namespace Cinema.Web.Controllers
             return Ok(ticket);
         }
 
+        /// <summary>
+        /// Returns a ticket by its code. The owner, Admins, and SuperAdmins can view it.
+        /// </summary>
+        /// <param name="ticketCode">The unique code of the ticket.</param>
+        /// <param></param>
+        /// <returns>The ticket with the specified code.</returns>
         [HttpGet("{ticketCode}")]
         public async Task<IActionResult> GetTicketByCode(string ticketCode, CancellationToken cancellationToken)
         {
@@ -54,6 +71,12 @@ namespace Cinema.Web.Controllers
             return Ok(ticket);
         }
 
+        /// <summary>
+        /// Returns a ticket by its booking ID. The owner, Admins, and SuperAdmins can view it.
+        /// </summary>
+        /// <param name="bookingId">The ID of the booking linked to the ticket.</param>
+        /// <param></param>
+        /// <returns>The ticket for the specified booking.</returns>
         [HttpGet("{bookingId:int}")]
         public async Task<IActionResult> GetTicketByBookingId(int bookingId, CancellationToken cancellationToken)
         {

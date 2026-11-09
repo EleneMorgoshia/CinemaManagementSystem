@@ -18,6 +18,12 @@ namespace Cinema.Web.Controllers
             _authService = authService;
         }
 
+        /// <summary>
+        /// Registers a new user.
+        /// </summary>
+        /// <param name="userDTO">The user's registration details.</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns>>A message confirming that the account was created</returns>
         [HttpPost]
         [AllowAnonymous]
         public async Task<IActionResult> Register(RegisterDTO userDTO, CancellationToken cancellationToken)
@@ -26,6 +32,12 @@ namespace Cinema.Web.Controllers
             return Ok("User Registered successfully");
         }
 
+        /// <summary>
+        /// Signs in the user with their email and password and returns a JWT.
+        /// </summary>
+        /// <param name="loginDTO"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns>>A JWT on success, or HTTP 401 if the email or password is incorrect</returns>
         [HttpPost]
         [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] LoginDTO loginDTO, CancellationToken cancellationToken)
@@ -36,6 +48,10 @@ namespace Cinema.Web.Controllers
             return Ok(result);
         }
 
+        /// <summary>
+        /// Handles the user's logout request.
+        /// </summary>
+        /// <returns>HTTP 204 No Content</returns>
         [HttpPost]
         [Authorize]
         public IActionResult Logout()

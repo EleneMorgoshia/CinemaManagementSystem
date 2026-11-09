@@ -17,6 +17,11 @@ namespace Cinema.Web.Controllers
             _seatService = seatService;
         }
 
+        /// <summary>
+        /// Returns all seats. Anyone can view them.
+        /// </summary>
+        /// <param></param>
+        /// <returns>A list of all seats.</returns>
         [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> GetAllSeats(CancellationToken cancellationToken)
@@ -25,6 +30,12 @@ namespace Cinema.Web.Controllers
             return Ok(seats);
         }
 
+        /// <summary>
+        /// Returns a seat by ID. Anyone can view it.
+        /// </summary>
+        /// <param name="id">The ID of the seat to retrieve</param>
+        /// <param></param>
+        /// <returns>The requested seat.</returns>
         [HttpGet("{id:int}")]
         [AllowAnonymous]
         public async Task<IActionResult> GetSeatById(int id, CancellationToken cancellationToken)
@@ -33,6 +44,12 @@ namespace Cinema.Web.Controllers
             return Ok(seat);
         }
 
+        /// <summary>
+        /// Returns all seats in a cinema hall. Anyone can view them.
+        /// </summary>
+        /// <param name="hallId">The ID of the hall whose seats to retrieve.</param>
+        /// <param></param>
+        /// <returns>A list of seats in the hall.</returns>
         [HttpGet("{hallId:int}")]
         [AllowAnonymous]
         public async Task<IActionResult> GetSeatsByHallId(int hallId, CancellationToken cancellationToken)
@@ -41,6 +58,12 @@ namespace Cinema.Web.Controllers
             return Ok(seats);
         }
 
+        /// <summary>
+        /// Adds a seat to a cinema hall. Only Admins and SuperAdmins can add seats.
+        /// </summary>
+        /// <param name="createSeatDTO">The details of the new seat.</param>
+        /// <param></param>
+        /// <returns>HTTP 201 Created with the new seat.</returns>
         [HttpPost]
         [Authorize(Roles = "Admin, SuperAdmin")]
         public async  Task<IActionResult> AddSeat(CreateSeatDTO createSeatDTO, CancellationToken cancellationToken)
@@ -54,6 +77,13 @@ namespace Cinema.Web.Controllers
                 );
         }
 
+        /// <summary>
+        /// Updates a seat by ID. Only Admins and SuperAdmins can update seats.
+        /// </summary>
+        /// <param name="id">The ID of the seat to update.</param>
+        /// <param name="updateSeatDTO">The updated seat details.</param>
+        /// <param></param>
+        /// <returns>HTTP 204 No Content on success.</returns>
         [HttpPut("{id:int}")]
         [Authorize(Roles = "Admin, SuperAdmin")]
         public async Task<IActionResult> UpdateSeat(int id, UpdateSeatDTO updateSeatDTO, CancellationToken cancellationToken)
@@ -62,6 +92,12 @@ namespace Cinema.Web.Controllers
             return NoContent();
         }
 
+        /// <summary>
+        /// Deletes a seat by ID. Only Admins and SuperAdmins can delete seats.
+        /// </summary>
+        /// <param name="id">The ID of the seat to delete.</param>
+        /// <param></param>
+        /// <returns>HTTP 204 No Content on success.</returns>
         [HttpDelete("{id:int}")]
         [Authorize(Roles = "Admin, SuperAdmin")]
         public async Task<IActionResult> DeleteSeat(int id, CancellationToken cancellationToken)

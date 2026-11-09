@@ -17,6 +17,13 @@ namespace Cinema.Web.Controllers
             _userService = userService;
         }
 
+
+        /// <summary>
+        /// returns all users. Only admins and super admins can call this endpoint.
+        /// </summary>
+        /// <param ></param>
+        /// <returns></returns>
+
         [HttpGet] 
         [Authorize(Roles = "Admin, SuperAdmin")]
         public async Task<IActionResult> GetAllUsers(CancellationToken cancellationToken)
@@ -25,6 +32,11 @@ namespace Cinema.Web.Controllers
             return Ok(users);
         }
 
+        /// <summary>
+        /// returns a user by Id. Users can view their own profile. Admins and SuperAdmins can view any profile.
+        /// </summary>
+        /// <param name="id">The ID of the user to retrieve</param>
+        /// <returns>The requested user's details</returns>
         [HttpGet("{id}")] 
         public async Task<IActionResult> GetUser(string id)
         {
@@ -39,8 +51,13 @@ namespace Cinema.Web.Controllers
             return Ok(user);
         }
 
-     
 
+        /// <summary>
+        /// Updates a user's profile. 
+        /// </summary>
+        /// <param name="id">The ID of the user to update</param>
+        /// <param name="updateUserDto">The new profile details.ი</param>
+        /// <returns>The updated user's details</returns>
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateUser(string id, [FromBody] UpdateUserDTO updateUserDto)
         {
@@ -59,7 +76,11 @@ namespace Cinema.Web.Controllers
             }
         }
 
-
+        /// <summary>
+        /// Deletes a user.
+        /// </summary>
+        /// <param name="id">The ID of the user to delete</param>
+        /// <returns></returns>
         [HttpDelete("{id}")] 
         public async Task<IActionResult> DeleteUser(string id)
         {
@@ -78,6 +99,11 @@ namespace Cinema.Web.Controllers
             }
         }
 
+        /// <summary>
+        ///  Assigns the Admin role to a user. Only super admins can do this.
+        /// </summary>
+        /// <param name="userId">The ID of the user receiving the Admin role</param>
+        /// <returns></returns>
         [Authorize(Roles = "SuperAdmin")]
         [HttpPost("{userId}")]
         public async Task<IActionResult> MakeAdmin(string userId)
@@ -93,7 +119,11 @@ namespace Cinema.Web.Controllers
             }
         }
 
-        
+        /// <summary>
+        /// Removes the Admin role from a user. Only super admins can do this.
+        /// </summary>
+        /// <param name="userId">The ID of the user whose Admin role will be removed</param>
+        /// <returns></returns>
         [Authorize(Roles = "SuperAdmin")]
         [HttpDelete("{userId}")]
         public async Task<IActionResult> RemoveAdminRole(string userId)
@@ -109,7 +139,12 @@ namespace Cinema.Web.Controllers
             }
         }
 
-        [Authorize(Roles = "SuperAdmin")]
+        /// <summary>
+        /// Returns a user's roles. Admins and SuperAdmins can view them
+        /// </summary>
+        /// <param name="id">The ID of the user</param>
+        /// <returns>The user's roles.</returns>
+        [Authorize(Roles = "SuperAdmin, Admin")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetUserRoleById(string id)
         {
