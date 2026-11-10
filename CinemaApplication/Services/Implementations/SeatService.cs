@@ -32,6 +32,7 @@ namespace CinemaApplication.Services.Implementations
             _sessionRepository = sessionRepository;
         }
 
+        private const int MaxSeatsPerHall = 40;
         public async Task<ICollection<SeatDTO>> GetAllSeatsAsync(CancellationToken cancellationToken)
         {
             var seats = await _seatRepository.GetAllSeats(cancellationToken);
@@ -78,6 +79,9 @@ namespace CinemaApplication.Services.Implementations
             bool seatExists = existingSeats.Any(s => s.RowNumber == createSeatDTO.RowNumber && s.SeatNumber == createSeatDTO.SeatNumber);
             if (seatExists)
                 throw new InvalidOperationException("A seat with this row and number already exists in this hall.");
+            
+            if (existingSeats.Count() >= MaxSeatsPerHall)
+                throw new InvalidOperationException($"This hall already has the maximum of {MaxSeatsPerHall} seats.");
 
             var seat = _mapper.Map<CreateSeatDTO, Seat>(createSeatDTO);
             await _seatRepository.AddSeat(seat, cancellationToken);

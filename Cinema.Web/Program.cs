@@ -153,6 +153,10 @@ namespace Cinema.Web
 
             var app = builder.Build();
 
+            //front+=
+            app.UseDefaultFiles();
+            app.UseStaticFiles();
+
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {

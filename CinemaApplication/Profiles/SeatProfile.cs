@@ -16,6 +16,8 @@ namespace CinemaApplication.Profiles
             CreateMap<Seat, SeatDTO>();
             CreateMap<CreateSeatDTO, Seat>();
             CreateMap<UpdateSeatDTO, Seat>();
+            CreateMap<UpdateSeatDTO, Seat>()
+                .ForMember(dest => dest.HallId, opt => opt.Ignore());
         }
     }
 }
