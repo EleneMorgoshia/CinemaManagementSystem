@@ -6,6 +6,7 @@ using CinemaDomain.Models.DTOs;
 using CinemaDomain.Models.Entities;
 using CinemaInfrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -18,469 +19,305 @@ namespace Cinema.Tests.Services
 {
     public class BookingServiceTest
     {
-        [Fact]
-        public async Task AddBookingAsync_AlreadyBookedSeat_DoesNotCallAddBooking()
-        {
-            // Arrange
-            var bookingRepoMock = new Mock<IBookingRepository>();
-            var sessionRepoMock = new Mock<ISessionRepository>();
-            var seatRepoMock = new Mock<ISeatRepository>();
-            var ticketServiceMock = new Mock<ITicketService>();
-            var unitOfWorkMock = new Mock<IUnitOfWork>();
-            var mapperMock = new Mock<IMapper>();
+        private const string UserId = "user-1";
+        private const int BookingId = 1;
+        private const int SeatId = 10;
+        private const int SessionId = 20;
+        private const int HallId = 1;
 
-            var userManagerMock = new Mock<UserManager<ApplicationUser>>(
+        private readonly Mock<IBookingRepository> _bookingRepository = new();
+        private readonly Mock<ISessionRepository> _sessionRepository = new();
+        private readonly Mock<ISeatRepository> _seatRepository = new();
+        private readonly Mock<ITicketService> _ticketService = new();
+        private readonly Mock<IUnitOfWork> _unitOfWork = new();
+        private readonly Mock<IMapper> _mapper = new();
+        private readonly BookingService _service;
+
+        public BookingServiceTest()
+        {
+            var userManager = new Mock<UserManager<ApplicationUser>>(
                 Mock.Of<IUserStore<ApplicationUser>>(),
                 null!, null!, null!, null!,
                 null!, null!, null!, null!);
 
+            userManager
+                .Setup(manager => manager.FindByIdAsync(UserId))
+                .ReturnsAsync(new ApplicationUser { Id = UserId });
+
+            _service = new BookingService(
+                _bookingRepository.Object,
+                _unitOfWork.Object,
+                _mapper.Object,
+                userManager.Object,
+                _seatRepository.Object,
+                _sessionRepository.Object,
+                _ticketService.Object,
+                Mock.Of<IEmailService>(),
+                NullLogger<BookingService>.Instance);
+        }
+
+        [Fact]
+        public async Task AddBookingAsync_AlreadyBookedSeat_DoesNotAddBooking()
+        {
+            // Arrange
             var dto = new CreateBookingDTO
             {
-                SessionId = 20,
-                SeatId = 10
+                SessionId = SessionId,
+                SeatId = SeatId
             };
 
-            userManagerMock
-                .Setup(u => u.FindByIdAsync("user-1"))
-                .ReturnsAsync(new ApplicationUser
-                {
-                    Id = "user-1"
-                });
+            SetUpSession(DateTime.UtcNow.AddDays(1));
+            SetUpSeat(HallId, isVip: false);
 
-            sessionRepoMock
-                .Setup(r => r.GetSessionById(
-                    20, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new Session
-                {
-                    Id = 20,
-                    HallId = 1,
-                    StartsAt = DateTime.UtcNow.AddDays(1),
-                    Status = true
-                });
-
-            seatRepoMock
-                .Setup(r => r.GetSeatById(
-                    10, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new Seat
-                {
-                    Id = 10,
-                    HallId = 1
-                });
-
-            // This seat already has an active booking.
-            bookingRepoMock
-                .Setup(r => r.IsSeatBookedForSession(
-                    10, 20, It.IsAny<CancellationToken>()))
+            _bookingRepository
+                .Setup(repository => repository.IsSeatBookedForSession(
+                    SeatId, SessionId, CancellationToken.None))
                 .ReturnsAsync(true);
 
-            var bookingService = new BookingService(
-                bookingRepoMock.Object,
-                unitOfWorkMock.Object,
-                mapperMock.Object,
-                userManagerMock.Object,
-                seatRepoMock.Object,
-                sessionRepoMock.Object,
-                ticketServiceMock.Object);
-
             // Act
-            var exception =
-                await Assert.ThrowsAsync<InvalidOperationException>(
-                    () => bookingService.AddBookingAsync(
-                        dto,
-                        "user-1",
-                        CancellationToken.None));
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => _service.AddBookingAsync(dto, UserId, CancellationToken.None));
 
             // Assert
-            Assert.Equal(
-                "This seat is already booked.",
-                exception.Message);
+            Assert.Equal("This seat is already booked.", exception.Message);
 
-            bookingRepoMock.Verify(
-                r => r.AddBooking(
-                    It.IsAny<Booking>(),
+            _bookingRepository.Verify(
+                repository => repository.AddBooking(
+                    It.IsAny<Booking>(), It.IsAny<CancellationToken>()),
+                Times.Never());
+
+            _unitOfWork.Verify(
+                unitOfWork => unitOfWork.SaveChangesAsync(
                     It.IsAny<CancellationToken>()),
-                Times.Never);
-
-            unitOfWorkMock.Verify(
-                u => u.SaveChangesAsync(
-                    It.IsAny<CancellationToken>()),
-                Times.Never);
-        }
-
-        [Theory]
-        [InlineData("another-user", true, false, "owner")]
-        [InlineData("user-1", false, false, "cancelled")]
-        [InlineData("user-1", true, true, "started")]
-        public async Task UpdateBookingAsync_InvalidCancellation_DoesNotSave( string bookingOwnerId, bool bookingStatus,bool sessionStarted,string scenario)
-        {
-            // Arrange
-            var bookingRepoMock = new Mock<IBookingRepository>();
-            var sessionRepoMock = new Mock<ISessionRepository>();
-            var seatRepoMock = new Mock<ISeatRepository>();
-            var ticketServiceMock = new Mock<ITicketService>();
-            var unitOfWorkMock = new Mock<IUnitOfWork>();
-            var mapperMock = new Mock<IMapper>();
-
-            var userManagerMock = new Mock<UserManager<ApplicationUser>>(
-                Mock.Of<IUserStore<ApplicationUser>>(),
-                null!, null!, null!, null!,
-                null!, null!, null!, null!);
-
-            var booking = new Booking
-            {
-                Id = 1,
-                UserId = bookingOwnerId,
-                SessionId = 20,
-                Status = bookingStatus
-            };
-
-            bookingRepoMock
-                .Setup(r => r.GetBookingById(
-                    1, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(booking);
-
-            userManagerMock
-                .Setup(u => u.FindByIdAsync("user-1"))
-                .ReturnsAsync(new ApplicationUser
-                {
-                    Id = "user-1"
-                });
-
-            sessionRepoMock
-                .Setup(r => r.GetSessionById(
-                    20, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new Session
-                {
-                    Id = 20,
-                    StartsAt = sessionStarted
-                        ? DateTime.UtcNow.AddDays(-1)
-                        : DateTime.UtcNow.AddDays(1)
-                });
-
-            var service = new BookingService(
-                bookingRepoMock.Object,
-                unitOfWorkMock.Object,
-                mapperMock.Object,
-                userManagerMock.Object,
-                seatRepoMock.Object,
-                sessionRepoMock.Object,
-                ticketServiceMock.Object);
-
-            var dto = new CancelBookingDTO { Id = 1 };
-
-            // Act and Assert
-            if (scenario == "owner")
-            {
-                var exception =
-                    await Assert.ThrowsAsync<UnauthorizedAccessException>(
-                        () => service.UpdateBookingAsync(
-                            1, dto, "user-1", CancellationToken.None));
-
-                Assert.Equal(
-                    "You cannot cancel another user's booking.",
-                    exception.Message);
-            }
-            else
-            {
-                var exception =
-                    await Assert.ThrowsAsync<InvalidOperationException>(
-                        () => service.UpdateBookingAsync(
-                            1, dto, "user-1", CancellationToken.None));
-
-                var expectedMessage = scenario == "cancelled"
-                    ? "Booking is already cancelled."
-                    : "You cannot cancel a booking after the session has started.";
-
-                Assert.Equal(expectedMessage, exception.Message);
-            }
-
-            bookingRepoMock.Verify(
-                r => r.UpdateBooking(It.IsAny<Booking>()),
-                Times.Never);
-
-            unitOfWorkMock.Verify(
-                u => u.SaveChangesAsync(It.IsAny<CancellationToken>()),
-                Times.Never);
-        }
-
-
-        [Fact]
-        public async Task UpdateBookingAsync_ValidCancellation_UpdatesAndSaves()
-        {
-            // Arrange
-            var bookingRepoMock = new Mock<IBookingRepository>();
-            var sessionRepoMock = new Mock<ISessionRepository>();
-            var seatRepoMock = new Mock<ISeatRepository>();
-            var ticketServiceMock = new Mock<ITicketService>();
-            var unitOfWorkMock = new Mock<IUnitOfWork>();
-            var mapperMock = new Mock<IMapper>();
-
-            var userManagerMock = new Mock<UserManager<ApplicationUser>>(
-                Mock.Of<IUserStore<ApplicationUser>>(),
-                null!, null!, null!, null!,
-                null!, null!, null!, null!);
-
-            var booking = new Booking
-            {
-                Id = 1,
-                UserId = "user-1",
-                SessionId = 20,
-                Status = true
-            };
-
-            bookingRepoMock
-                .Setup(r => r.GetBookingById(
-                    1, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(booking);
-
-            userManagerMock
-                .Setup(u => u.FindByIdAsync("user-1"))
-                .ReturnsAsync(new ApplicationUser
-                {
-                    Id = "user-1"
-                });
-
-            sessionRepoMock
-                .Setup(r => r.GetSessionById(
-                    20, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new Session
-                {
-                    Id = 20,
-                    StartsAt = DateTime.UtcNow.AddDays(1)
-                });
-
-            var service = new BookingService(
-                bookingRepoMock.Object,
-                unitOfWorkMock.Object,
-                mapperMock.Object,
-                userManagerMock.Object,
-                seatRepoMock.Object,
-                sessionRepoMock.Object,
-                ticketServiceMock.Object);
-
-            var dto = new CancelBookingDTO { Id = 1 };
-
-            // Act
-            await service.UpdateBookingAsync(
-                1, dto, "user-1", CancellationToken.None);
-
-            // Assert: the booking becomes cancelled.
-            Assert.False(booking.Status);
-
-            bookingRepoMock.Verify(
-                r => r.UpdateBooking(booking),
-                Times.Once);
-
-            unitOfWorkMock.Verify(
-                u => u.SaveChangesAsync(CancellationToken.None),
-                Times.Once);
+                Times.Never());
         }
 
         [Fact]
         public async Task AddBookingAsync_SeatFromAnotherHall_DoesNotSave()
         {
             // Arrange
-            var bookingRepoMock = new Mock<IBookingRepository>();
-            var sessionRepoMock = new Mock<ISessionRepository>();
-            var seatRepoMock = new Mock<ISeatRepository>();
-            var ticketServiceMock = new Mock<ITicketService>();
-            var unitOfWorkMock = new Mock<IUnitOfWork>();
-            var mapperMock = new Mock<IMapper>();
-
-            var userManagerMock = new Mock<UserManager<ApplicationUser>>(
-                Mock.Of<IUserStore<ApplicationUser>>(),
-                null!, null!, null!, null!,
-                null!, null!, null!, null!);
-
             var dto = new CreateBookingDTO
             {
-                SessionId = 20,
-                SeatId = 10
+                SessionId = SessionId,
+                SeatId = SeatId
             };
 
-            userManagerMock
-                .Setup(u => u.FindByIdAsync("user-1"))
-                .ReturnsAsync(new ApplicationUser { Id = "user-1" });
-
-            sessionRepoMock
-                .Setup(r => r.GetSessionById(
-                    20, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new Session
-                {
-                    Id = 20,
-                    HallId = 1,
-                    StartsAt = DateTime.UtcNow.AddDays(1),
-                    Status = true
-                });
-
-            // The seat belongs to hall 2, but the session is in hall 1.
-            seatRepoMock
-                .Setup(r => r.GetSeatById(
-                    10, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new Seat
-                {
-                    Id = 10,
-                    HallId = 2
-                });
-
-            var service = new BookingService(
-                bookingRepoMock.Object,
-                unitOfWorkMock.Object,
-                mapperMock.Object,
-                userManagerMock.Object,
-                seatRepoMock.Object,
-                sessionRepoMock.Object,
-                ticketServiceMock.Object);
+            SetUpSession(DateTime.UtcNow.AddDays(1));
+            SetUpSeat(hallId: 2, isVip: false);
 
             // Act
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-                () => service.AddBookingAsync(
-                    dto, "user-1", CancellationToken.None));
+                () => _service.AddBookingAsync(dto, UserId, CancellationToken.None));
 
             // Assert
-            Assert.Equal(
-                "Seat does not belong to the session's hall.",
-                exception.Message);
+            Assert.Equal("Seat does not belong to the session's hall.", exception.Message);
 
-            bookingRepoMock.Verify(
-                r => r.AddBooking(
-                    It.IsAny<Booking>(),
-                    It.IsAny<CancellationToken>()),
-                Times.Never);
+            _bookingRepository.Verify(
+                repository => repository.AddBooking(
+                    It.IsAny<Booking>(), It.IsAny<CancellationToken>()),
+                Times.Never());
 
-            ticketServiceMock.Verify(
-                t => t.AddTicketAsync(
+            _ticketService.Verify(
+                service => service.AddTicketAsync(
                     It.IsAny<Booking>(),
                     It.IsAny<decimal>(),
                     It.IsAny<CancellationToken>()),
-                Times.Never);
+                Times.Never());
 
-            unitOfWorkMock.Verify(
-                u => u.SaveChangesAsync(It.IsAny<CancellationToken>()),
-                Times.Never);
+            _unitOfWork.Verify(
+                unitOfWork => unitOfWork.SaveChangesAsync(
+                    It.IsAny<CancellationToken>()),
+                Times.Never());
         }
 
         [Theory]
-        [InlineData(false, 15)] // Standard seat -0 15.
-        [InlineData(true, 25)]  // VIP seat - 25.
-        public async Task AddBookingAsync_ValidBooking_CreatesTicketWithCorrectPrice(bool isVip,int expectedPrice)
+        [InlineData(false, 15)]
+        [InlineData(true, 25)]
+        public async Task AddBookingAsync_ValidBooking_CreatesTicketWithCorrectPrice(
+            bool isVip,
+            int expectedPrice)
         {
             // Arrange
-            var bookingRepoMock = new Mock<IBookingRepository>();
-            var sessionRepoMock = new Mock<ISessionRepository>();
-            var seatRepoMock = new Mock<ISeatRepository>();
-            var ticketServiceMock = new Mock<ITicketService>();
-            var unitOfWorkMock = new Mock<IUnitOfWork>();
-            var mapperMock = new Mock<IMapper>();
-
-            var userManagerMock = new Mock<UserManager<ApplicationUser>>(
-                Mock.Of<IUserStore<ApplicationUser>>(),
-                null!, null!, null!, null!,
-                null!, null!, null!, null!);
-
             var dto = new CreateBookingDTO
             {
-                SessionId = 20,
-                SeatId = 10
+                SessionId = SessionId,
+                SeatId = SeatId
             };
 
             var booking = new Booking
             {
-                SessionId = 20,
-                SeatId = 10
+                SessionId = SessionId,
+                SeatId = SeatId
             };
 
             var response = new BookingDTO();
+            var finalPrice = (decimal)expectedPrice;
 
-            userManagerMock
-                .Setup(u => u.FindByIdAsync("user-1"))
-                .ReturnsAsync(new ApplicationUser { Id = "user-1" });
+            SetUpSession(DateTime.UtcNow.AddDays(1));
+            SetUpSeat(HallId, isVip);
 
-            sessionRepoMock
-                .Setup(r => r.GetSessionById(
-                    20, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new Session
-                {
-                    Id = 20,
-                    HallId = 1,
-                    StartsAt = DateTime.UtcNow.AddDays(1),
-                    Status = true,
-                    StandardPrice = 15m,
-                    VipPrice = 25m
-                });
-
-            seatRepoMock
-                .Setup(r => r.GetSeatById(
-                    10, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new Seat
-                {
-                    Id = 10,
-                    HallId = 1,
-                    IsVip = isVip
-                });
-
-            bookingRepoMock
-                .Setup(r => r.IsSeatBookedForSession(
-                    10, 20, It.IsAny<CancellationToken>()))
+            _bookingRepository
+                .Setup(repository => repository.IsSeatBookedForSession(
+                    SeatId, SessionId, CancellationToken.None))
                 .ReturnsAsync(false);
 
-            mapperMock
-                .Setup(m => m.Map<CreateBookingDTO, Booking>(dto))
+            _mapper
+                .Setup(mapper => mapper.Map<CreateBookingDTO, Booking>(dto))
                 .Returns(booking);
 
-            mapperMock
-                .Setup(m => m.Map<BookingDTO>(booking))
+            _mapper
+                .Setup(mapper => mapper.Map<BookingDTO>(booking))
                 .Returns(response);
 
-            bookingRepoMock
-                .Setup(r => r.AddBooking(
-                    booking, It.IsAny<CancellationToken>()))
+            _bookingRepository
+                .Setup(repository => repository.AddBooking(
+                    booking, CancellationToken.None))
                 .Returns(Task.CompletedTask);
 
-            ticketServiceMock
-                .Setup(t => t.AddTicketAsync(
-                    booking,
-                    (decimal)expectedPrice,
-                    It.IsAny<CancellationToken>()))
-                .Returns(Task.CompletedTask);
-
-            var service = new BookingService(
-                bookingRepoMock.Object,
-                unitOfWorkMock.Object,
-                mapperMock.Object,
-                userManagerMock.Object,
-                seatRepoMock.Object,
-                sessionRepoMock.Object,
-                ticketServiceMock.Object);
+            _ticketService
+                .Setup(service => service.AddTicketAsync(
+                    booking, finalPrice, CancellationToken.None))
+                .ReturnsAsync(() => new()
+                {
+                    TicketCode = "TEST-001",
+                    FinalPrice = finalPrice
+                });
 
             var beforeBooking = DateTime.UtcNow;
 
             // Act
-            var result = await service.AddBookingAsync(
-                dto, "user-1", CancellationToken.None);
-
-            var afterBooking = DateTime.UtcNow;
+            var result = await _service.AddBookingAsync(
+                dto, UserId, CancellationToken.None);
 
             // Assert
             Assert.Same(response, result);
-            Assert.Equal("user-1", booking.UserId);
+            Assert.Equal(UserId, booking.UserId);
             Assert.True(booking.Status);
-            Assert.InRange(booking.CreatedAt, beforeBooking, afterBooking);
+            Assert.InRange(booking.CreatedAt, beforeBooking, DateTime.UtcNow);
 
-            bookingRepoMock.Verify(
-                r => r.AddBooking(booking, CancellationToken.None),
-                Times.Once);
+            _bookingRepository.Verify(
+                repository => repository.AddBooking(
+                    booking, CancellationToken.None),
+                Times.Once());
 
-            ticketServiceMock.Verify(
-                t => t.AddTicketAsync(
-                    booking,
-                    (decimal)expectedPrice,
-                    CancellationToken.None),
-                Times.Once);
+            _ticketService.Verify(
+                service => service.AddTicketAsync(
+                    booking, finalPrice, CancellationToken.None),
+                Times.Once());
 
-            unitOfWorkMock.Verify(
-                u => u.SaveChangesAsync(CancellationToken.None),
-                Times.Once);
+            _unitOfWork.Verify(
+                unitOfWork => unitOfWork.SaveChangesAsync(CancellationToken.None),
+                Times.Once());
+        }
+
+        [Theory]
+        [InlineData("another-user", true, 1, typeof(UnauthorizedAccessException),
+            "You cannot cancel another user's booking.")]
+        [InlineData(UserId, false, 1, typeof(InvalidOperationException),
+            "Booking is already cancelled.")]
+        [InlineData(UserId, true, -1, typeof(InvalidOperationException),
+            "You cannot cancel a booking after the session has started.")]
+        public async Task UpdateBookingAsync_InvalidCancellation_DoesNotSave(
+            string bookingOwnerId,
+            bool bookingStatus,
+            int sessionStartsInDays,
+            Type expectedExceptionType,
+            string expectedMessage)
+        {
+            // Arrange
+            var booking = SetUpBooking(bookingOwnerId, bookingStatus);
+            SetUpSession(DateTime.UtcNow.AddDays(sessionStartsInDays));
+            var dto = new CancelBookingDTO { Id = BookingId };
+
+            // Act
+            var exception = await Assert.ThrowsAsync(
+                expectedExceptionType,
+                () => _service.UpdateBookingAsync(
+                    BookingId, dto, UserId, CancellationToken.None));
+
+            // Assert
+            Assert.Equal(expectedMessage, exception.Message);
+            Assert.Equal(bookingStatus, booking.Status);
+
+            _bookingRepository.Verify(
+                repository => repository.UpdateBooking(It.IsAny<Booking>()),
+                Times.Never());
+
+            _unitOfWork.Verify(
+                unitOfWork => unitOfWork.SaveChangesAsync(
+                    It.IsAny<CancellationToken>()),
+                Times.Never());
+        }
+
+        [Fact]
+        public async Task UpdateBookingAsync_ValidCancellation_UpdatesAndSaves()
+        {
+            // Arrange
+            var booking = SetUpBooking(UserId, status: true);
+            SetUpSession(DateTime.UtcNow.AddDays(1));
+            var dto = new CancelBookingDTO { Id = BookingId };
+
+            // Act
+            await _service.UpdateBookingAsync(
+                BookingId, dto, UserId, CancellationToken.None);
+
+            // Assert
+            Assert.False(booking.Status);
+
+            _bookingRepository.Verify(
+                repository => repository.UpdateBooking(booking),
+                Times.Once());
+
+            _unitOfWork.Verify(
+                unitOfWork => unitOfWork.SaveChangesAsync(CancellationToken.None),
+                Times.Once());
+        }
+
+        private void SetUpSession(DateTime startsAt)
+        {
+            _sessionRepository
+                .Setup(repository => repository.GetSessionById(
+                    SessionId, CancellationToken.None))
+                .ReturnsAsync(new Session
+                {
+                    Id = SessionId,
+                    HallId = HallId,
+                    StartsAt = startsAt,
+                    Status = true,
+                    StandardPrice = 15m,
+                    VipPrice = 25m
+                });
+        }
+
+        private void SetUpSeat(int hallId, bool isVip)
+        {
+            _seatRepository
+                .Setup(repository => repository.GetSeatById(
+                    SeatId, CancellationToken.None))
+                .ReturnsAsync(new Seat
+                {
+                    Id = SeatId,
+                    HallId = hallId,
+                    IsVip = isVip
+                });
+        }
+
+        private Booking SetUpBooking(string ownerId, bool status)
+        {
+            var booking = new Booking
+            {
+                Id = BookingId,
+                UserId = ownerId,
+                SessionId = SessionId,
+                Status = status
+            };
+
+            _bookingRepository
+                .Setup(repository => repository.GetBookingById(
+                    BookingId, CancellationToken.None))
+                .ReturnsAsync(booking);
+
+            return booking;
         }
     }
 }
