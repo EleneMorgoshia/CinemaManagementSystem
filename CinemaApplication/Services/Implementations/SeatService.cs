@@ -16,16 +16,20 @@ namespace CinemaApplication.Services.Implementations
         private readonly ISeatRepository _seatRepository;
         private readonly IHallRepository _hallRepository;
         private readonly IBookingRepository _bookingRepository;
+        private readonly ISessionRepository _sessionRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
 
-        public SeatService(ISeatRepository seatRepository, IUnitOfWork unitOfWork, IMapper mapper, IHallRepository hallRepository, IBookingRepository bookingRepository)
+        public SeatService(ISeatRepository seatRepository, IUnitOfWork unitOfWork, 
+            IMapper mapper, IHallRepository hallRepository, 
+            IBookingRepository bookingRepository, ISessionRepository sessionRepository)
         {
             _seatRepository = seatRepository;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _hallRepository = hallRepository;
             _bookingRepository = bookingRepository;
+            _sessionRepository = sessionRepository;
         }
 
         public async Task<ICollection<SeatDTO>> GetAllSeatsAsync(CancellationToken cancellationToken)
@@ -112,6 +116,31 @@ namespace CinemaApplication.Services.Implementations
 
             _seatRepository.Delete(seat);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task<ICollection<SeatDTO>> GetAvaliableSeatsBySessionIdAsync(int sessionId, CancellationToken cancellationToken)
+        {
+            var session = await _sessionRepository.GetSessionById(sessionId, cancellationToken);
+            if(session == null)
+                throw new KeyNotFoundException($"Session with ID {sessionId} was not found.");
+
+            //ყველა სითი რომელიც ამ სესიის კონკრეტულ ჰოლში გვაქვს 
+            var seats = await _seatRepository.GetSeatsByHallId(session.HallId, cancellationToken);
+            
+            //BOOKING ები ამ კონკრეტული სესიის
+            var bookings = await _bookingRepository.GetBookingsBySessionId(sessionId, cancellationToken);
+
+            var bookedSeatsIds = bookings
+                .Where(booking => booking.Status)
+                .Select(booking => booking.SeatId)
+                .ToHashSet();
+            
+            var availableSeats = seats
+                .Where(seat => !bookedSeatsIds.Contains(seat.Id))
+                .Select(seat => _mapper.Map<SeatDTO>(seat))
+                .ToList();
+            
+            return availableSeats;
         }
     }
 }

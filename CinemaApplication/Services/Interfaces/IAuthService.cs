@@ -10,6 +10,6 @@ namespace CinemaApplication.Services.Interfaces
     public interface IAuthService
     {
         Task<AuthResponseDTO> LoginUserAsync(LoginDTO dto, CancellationToken cancellationToken = default);
-        
+        Task ChangePasswordAsync(string userId, ChangePasswordDTO changePasswordDTO);
     }
 }

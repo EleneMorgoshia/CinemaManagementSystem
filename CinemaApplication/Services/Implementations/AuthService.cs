@@ -84,5 +84,20 @@ namespace CinemaApplication.Services.Implementations
             return await GenerateJwtToken(user);
         }
 
+        public async Task ChangePasswordAsync(string userId, ChangePasswordDTO changePasswordDTO)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if(user == null)
+                throw new KeyNotFoundException("User not found.");
+
+            var result = await _userManager.ChangePasswordAsync(user, changePasswordDTO.CurrentPassword, changePasswordDTO.NewPassword);
+            if (!result.Succeeded)
+            {
+                var message = string.Join(" ", result.Errors.Select(error => error.Description));
+                throw new ArgumentException(message);
+            }
+            
+        }
+        
     }
 }

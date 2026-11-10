@@ -10,7 +10,9 @@ namespace CinemaDomain.Interfaces
     public interface ISessionRepository
     {
         Task<ICollection<Session>> GetSessions(CancellationToken cancellationToken);
+
         Task<Session?> GetSessionById(int id, CancellationToken cancellationToken);
+        Task<ICollection<Session>> GetActiveSessions(CancellationToken cancellationToken);
         Task<ICollection<Session>> GetSessionsByMovieId(int movieId, CancellationToken cancellationToken);
         Task<ICollection<Session>> GetSessionsByHallId(int hallId, CancellationToken cancellationToken);
         Task AddSession(Session session, CancellationToken cancellationToken);

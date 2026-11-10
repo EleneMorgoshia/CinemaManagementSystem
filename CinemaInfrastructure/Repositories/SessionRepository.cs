@@ -22,7 +22,16 @@ namespace CinemaInfrastructure.Repositories
         {
             return await _context.Sessions.Include(s => s.Movie).Include(s => s.Hall).ToListAsync(cancellationToken);
         }
+        public async Task<ICollection<Session>> GetActiveSessions(CancellationToken cancellationToken)
+        {
+            var now = DateTime.Now;
 
+            return await _context.Sessions
+                .Where(session => session.Status && session.StartsAt > now)
+                .Include(session => session.Movie)
+                .Include(session => session.Hall)
+                .ToListAsync(cancellationToken);
+        }
         public async Task<Session?> GetSessionById(int id, CancellationToken cancellationToken)
         {
             return await _context.Sessions.Include(s => s.Movie).Include(s => s.Hall).FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
@@ -49,6 +58,8 @@ namespace CinemaInfrastructure.Repositories
                 .Where(s => s.HallId == hallId)
                 .ToListAsync(cancellationToken); 
         }
+
+
 
         public async Task AddSession(Session session, CancellationToken cancellationToken)
         {

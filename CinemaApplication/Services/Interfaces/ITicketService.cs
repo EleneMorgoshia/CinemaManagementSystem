@@ -15,6 +15,6 @@ namespace CinemaApplication.Services.Interfaces
         Task<TicketDTO> GetTicketByIdAsync(int id, string userId, bool isAdmin, CancellationToken cancellationToken);
         Task<TicketDTO> GetTicketByCodeAsync(string ticketCode, string userId, bool isAdmin, CancellationToken cancellationToken);
         Task<TicketDTO> GetTicketByBookingIdAsync(int bookingId, string userId, bool isAdmin, CancellationToken cancellationToken);
-        Task AddTicketAsync(Booking booking, decimal finalPrice, CancellationToken cancellationToken);
+        Task<TicketDTO> AddTicketAsync(Booking booking, decimal finalPrice, CancellationToken cancellationToken);
     }
 }

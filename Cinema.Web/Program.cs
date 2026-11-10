@@ -108,7 +108,7 @@ namespace Cinema.Web
             builder.Services.AddScoped<IBookingService, BookingService>();
             builder.Services.AddScoped<ITicketRepository,  TicketRepository>();
             builder.Services.AddScoped<ITicketService, TicketService>();
-
+            builder.Services.AddScoped<IEmailService, EmailService>();
             //AUTO MAPPER ADD
             builder.Services.AddAutoMapper(cfg => { }, typeof(UserProfile).Assembly);
 

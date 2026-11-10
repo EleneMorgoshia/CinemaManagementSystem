@@ -3,6 +3,7 @@ using CinemaApplication.Services.Interfaces;
 using CinemaDomain.Interfaces;
 using CinemaDomain.Models.DTOs;
 using CinemaDomain.Models.Entities;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -35,6 +36,11 @@ namespace CinemaApplication.Services.Implementations
             return sessions.Select(_mapper.Map<Session, SessionDTO>).ToList();
         }
 
+        public async Task<ICollection<SessionDTO>> GetActiveSessionsAsync(CancellationToken cancellationToken)
+        {
+            var sessions = await _sessionRepository.GetActiveSessions(cancellationToken);
+            return sessions.Select(_mapper.Map<Session, SessionDTO>).ToList();
+        }
         public async Task<SessionDTO> GetSessionByIdAsync(int id, CancellationToken cancellationToken) 
         {
             if (id <= 0)

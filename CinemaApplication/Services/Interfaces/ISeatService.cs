@@ -17,6 +17,6 @@ namespace CinemaApplication.Services.Interfaces
         Task<SeatDTO> AddSeatAsync(CreateSeatDTO createSeatDTO, CancellationToken cancellationToken);
         Task UpdateSeatAsync(int id, UpdateSeatDTO updateSeatDTO, CancellationToken cancellationToken);
         Task DeleteSeatAsync(int id, CancellationToken cancellationToken);
-
+        Task<ICollection<SeatDTO>> GetAvaliableSeatsBySessionIdAsync(int sessionId, CancellationToken cancellationToken);
     }
 }

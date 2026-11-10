@@ -3,6 +3,7 @@ using CinemaDomain.Models.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Cinema.Web.Controllers
 {
@@ -56,6 +57,23 @@ namespace Cinema.Web.Controllers
         [Authorize]
         public IActionResult Logout()
         {
+            return NoContent();
+        }
+
+        /// <summary>
+        /// Changes the signed-in user's password.
+        /// </summary>
+        /// <param name="changePasswordDTO">The current password and the new password.</param>
+        /// <returns></returns>
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> ChangePassword(ChangePasswordDTO changePasswordDTO)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier); //ჩერეზ ტოკენიდან ამოვიღე იუზერის აიდი
+            if (string.IsNullOrWhiteSpace(userId))
+                return Unauthorized();
+
+            await _authService.ChangePasswordAsync(userId, changePasswordDTO);
             return NoContent();
         }
     }

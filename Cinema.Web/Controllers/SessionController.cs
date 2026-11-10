@@ -22,11 +22,25 @@ namespace Cinema.Web.Controllers
         /// </summary>
         /// <param></param>
         /// <returns>A list of all sessions.</returns>
-        [AllowAnonymous]
+
+        [Authorize(Roles = "Admin, SuperAdmin")]
         [HttpGet]
         public async Task<IActionResult> GetSessions(CancellationToken cancellationToken)
         {
             var sessions = await _sessionService.GetSessionsAsync(cancellationToken);
+            return Ok(sessions);
+        }
+
+        /// <summary>
+        /// Returns sessions that are open for booking.
+        /// </summary>
+        /// <param ></param>
+        /// <returns></returns>
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetActiveSessions(CancellationToken cancellationToken)
+        {
+            var sessions = await _sessionService.GetActiveSessionsAsync(cancellationToken);
             return Ok(sessions);
         }
 

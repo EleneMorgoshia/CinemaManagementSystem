@@ -5,6 +5,7 @@ using CinemaDomain.Models.DTOs;
 using CinemaDomain.Models.Entities;
 using CinemaInfrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,21 +19,27 @@ namespace CinemaApplication.Services.Implementations
         private readonly IBookingRepository _bookingRepository;
         //private readonly IUsermManagerService _userManagerService;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ILogger<BookingService> _logger;
         private readonly ISessionRepository _sessionRepository;
         private readonly ISeatRepository _seatRepository;
         private readonly ITicketService _ticketService;
+        private readonly IEmailService _emailService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        public BookingService(IBookingRepository bookingRepository, IUnitOfWork unitOfWork, IMapper mapper, UserManager<ApplicationUser> userManager, ISeatRepository seatRepository, ISessionRepository sessionRepository, ITicketService ticketService)
+        public BookingService(IBookingRepository bookingRepository, IUnitOfWork unitOfWork, 
+            IMapper mapper, UserManager<ApplicationUser> userManager, ISeatRepository seatRepository, 
+            ISessionRepository sessionRepository, ITicketService ticketService, 
+            IEmailService emailService, ILogger<BookingService> logger)
         {
             _bookingRepository = bookingRepository;
-            //_userManagerService = usermManagerService;
             _userManager = userManager;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _seatRepository = seatRepository;
             _sessionRepository = sessionRepository;
             _ticketService = ticketService;
+            _emailService = emailService;
+            _logger = logger;
         }
 
         public async Task<ICollection<BookingDTO>> GetAllBookingsAsync(CancellationToken cancellationToken)
@@ -104,8 +111,32 @@ namespace CinemaApplication.Services.Implementations
             booking.CreatedAt = DateTime.UtcNow;
 
             await _bookingRepository.AddBooking(booking, cancellationToken);
-            await _ticketService.AddTicketAsync(booking, finalPrice, cancellationToken);
+            
+            var ticket = await _ticketService.AddTicketAsync(booking, finalPrice, cancellationToken);
+            if (ticket == null)
+                throw new ArgumentException("Ticket was not added");
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            //send ticket to user's email
+            try
+            {
+                var user = await _userManager.FindByIdAsync(userId);
+                var email = user?.Email;
+
+                if (!string.IsNullOrWhiteSpace(email))
+                {
+                    var body = "Your CinemaGO booking is confirmed.\n\n"
+                        + $"Ticket code: {ticket.TicketCode}\n"
+                        + $"Price: {ticket.FinalPrice:F2} GEL";
+
+                    await _emailService.SendEmailAsync(email, "Your CinemaGO ticket", body);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Could not send the ticket email for booking {BookingId}.", booking.Id);
+            }
+
             return _mapper.Map<BookingDTO>(booking);
         }
 
@@ -197,5 +228,7 @@ namespace CinemaApplication.Services.Implementations
             if (isBooked)
                 throw new InvalidOperationException("This seat is already booked.");
         }
+    
+
     }
 }

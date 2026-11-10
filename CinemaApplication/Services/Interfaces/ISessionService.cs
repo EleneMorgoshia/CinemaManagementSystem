@@ -13,6 +13,7 @@ namespace CinemaApplication.Services.Interfaces
     {
         Task<ICollection<SessionDTO>> GetSessionsAsync(CancellationToken cancellationToken);
         Task<SessionDTO> GetSessionByIdAsync(int id, CancellationToken cancellationToken);
+        Task<ICollection<SessionDTO>> GetActiveSessionsAsync(CancellationToken cancellationToken);
         Task<ICollection<SessionDTO>> GetSessionsByMovieIdAsync(int movieId, CancellationToken cancellationToken);
         Task<ICollection<SessionDTO>> GetSessionsByHallIdAsync(int hallId, CancellationToken cancellationToken);
         Task<SessionDTO> AddSessionAsync(CreateSessionDTO createSessionDto, CancellationToken cancellationToken);

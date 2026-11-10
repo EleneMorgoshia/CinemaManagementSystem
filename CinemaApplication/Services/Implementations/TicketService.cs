@@ -68,7 +68,7 @@ namespace CinemaApplication.Services.Implementations
             await ValidateTicketAccessAsync(ticket, userId, isAdmin, cancellationToken);
             return _mapper.Map<Ticket, TicketDTO>(ticket);
         }
-        public async Task AddTicketAsync(Booking booking, decimal finalPrice,  CancellationToken cancellationToken)
+        public async Task<TicketDTO> AddTicketAsync(Booking booking, decimal finalPrice,  CancellationToken cancellationToken)
         {
             await ValidateTicketAsync(booking, cancellationToken);
             if (finalPrice < 0)
@@ -82,6 +82,7 @@ namespace CinemaApplication.Services.Implementations
             };
 
             await _ticketRepository.AddTicket(ticket, cancellationToken);
+            return _mapper.Map<Ticket, TicketDTO>(ticket);
         }
 
         private async Task ValidateTicketAsync(Booking booking, CancellationToken cancellationToken)

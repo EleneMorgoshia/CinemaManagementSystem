@@ -105,5 +105,19 @@ namespace Cinema.Web.Controllers
             await _seatService.DeleteSeatAsync(id, cancellationToken);
             return NoContent();
         }
+
+        /// <summary>
+        /// Gets the available seats for a session.
+        /// </summary>
+        /// <param name="sessionId">The ID of the session.</param>
+        /// <param></param>
+        /// <returns></returns>
+        [HttpGet("{sessionId:int}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetAvailableSeatsBySessionId(int sessionId, CancellationToken cancellationToken)
+        {
+            var availableSeats = await _seatService.GetAvaliableSeatsBySessionIdAsync(sessionId, cancellationToken);
+            return Ok(availableSeats);
+        }
     }
 }
